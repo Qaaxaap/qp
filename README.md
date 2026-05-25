@@ -4,7 +4,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-**qp** is a lightweight, C++ based user tool for the [qur](https://your-git-host.com/yourname/qur) package repository. It is designed to be simple, fast, and completely transparent.
+**qp** is a lightweight, C++ based user tool for the [qur](https://github.com/qaaxaap/qur) package repository. It is designed to be simple, fast, and completely transparent.
 
 - You never need to manually clone `qur` – `qp` fetches metadata automatically.
 - Every package is built from source using a readable `MAKEFS` script.
@@ -38,6 +38,12 @@ Unlike most package managers, `qp` does **not** assume that it is the only way t
 - **`qp unregister <pkg>`** – removes a package from the database without touching the actual files (useful when you manually uninstalled it).
 
 This feature ensures that `qp list`, dependency resolution, and removal commands remain consistent with the real state of your system – even if you sometimes work outside the tool. It puts you back in control, not the package manager.
+
+### Working Alongside Other Package Managers (e.g., apt)
+
+Because you can manually register dependencies, `qp` does **not** require a “pure” LFS system. You can run `qp` on a machine that already uses `apt`, `dnf`, or any other package manager. Simply register the libraries and tools that are already installed by those managers, and `qp` will resolve them correctly when building packages from `qur`. The resulting software will work side‑by‑side with your existing packages – no conflicts, no forced migration. This makes `qp` a lightweight, non‑invasive addition to any Linux distribution, not just your LFS‑based one.
+
+In short: **`qp` respects your existing system and coexists with it. You stay in control.**
 
 ---
 
@@ -123,7 +129,7 @@ Because `MAKEFS` scripts are standard bash, you can reproduce every step by hand
 
 ```
 # qp configuration
-REPO_URL = "https://your-git-host.com/yourname/qur.git"
+REPO_URL = "https://github.com/qaaxaap/qur.git"
 REPO_DIR = "/var/lib/qur"
 BUILD_DIR = "/tmp/qp-build"
 LOG_DIR = "/var/log/qp"
@@ -185,7 +191,7 @@ Code style: keep it clean, commented, and consistent with the surrounding code.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-**qp** 是一个基于 C++ 的轻量级用户工具，用于 [qur](https://your-git-host.com/yourname/qur) 软件包仓库。它被设计得简单、快速且完全透明。
+**qp** 是一个基于 C++ 的轻量级用户工具，用于 [qur](https://github.com/qaaxaap/qur) 软件包仓库。它被设计得简单、快速且完全透明。
 
 - 你永远不需要手动克隆 `qur` – `qp` 会自动获取元数据。
 - 每个软件包依然通过可读的 `MAKEFS` 脚本从源码构建。
@@ -219,6 +225,12 @@ Code style: keep it clean, commented, and consistent with the surrounding code.
 - **`qp unregister <pkg>`** – 将软件包从数据库中移除，但不删除实际文件（当你手动卸载了它时很有用）。
 
 这一特性确保 `qp list`、依赖解析和卸载命令始终与系统的真实状态保持一致 – 即使你有时会脱离工具直接操作。它把控制权交还给你，而不是包管理器。
+
+### 与其他包管理器（例如 apt）共存
+
+因为你可以手动登记依赖，`qp` **并不要求**一个“纯净”的 LFS 系统。你甚至可以在已经安装了 `apt`、`dnf` 或其他包管理器的机器上运行 `qp`。只需将那些已由其他包管理器安装好的库和工具手动登记一下，`qp` 在从 `qur` 构建软件包时就能正确解析它们。最终构建出来的软件可以和现有软件包和平共处——没有冲突，也无需强制迁移。这使得 `qp` 成为一个轻量、无侵入的附加工具，不仅适用于你基于 LFS 的发行版，也适用于任何 Linux 发行版。
+
+简而言之：**`qp` 尊重你的现有系统，与它共存。控制权始终在你手中。**
 
 ---
 
@@ -304,7 +316,7 @@ qp unregister <pkg>
 
 ```
 # qp 配置文件
-REPO_URL = "https://your-git-host.com/yourname/qur.git"
+REPO_URL = "https://github.com/qaaxaap/qur.git"
 REPO_DIR = "/var/lib/qur"
 BUILD_DIR = "/tmp/qp-build"
 LOG_DIR = "/var/log/qp"
