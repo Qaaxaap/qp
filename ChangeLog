@@ -1,0 +1,23 @@
+2026-05-26  Qaaxaap  <1515784026@qq.com>
+
+	* configure.ac: Initialize autoconf configuration for qp.
+	Defines package name, version 0.1.0, checks for C and C++ compilers.
+	* Makefile.am: Declare SUBDIRS = src tests, and extra distributed
+	files (README.md, README, LICENSE, AUTHORS).
+	* src/Makefile.am: Define bin_PROGRAMS = qp, with main.cpp
+	as source. Set C++17 standard, strict warnings, and include path.
+	* src/main.cpp: Temporary hello world program for build system test.
+	* tests/Makefile.am: Add check_PROGRAMS = test_main, a trivial test
+	that always passes, and TESTS = test_main to run it on make check.
+	* tests/test_main.cpp: Trivial test returning 0, used to verify
+	the test harness.
+	* .clang-format: GNU-style formatting rules for C++ code.
+	* .gitignore: Ignore build artifacts (autom4te.cache, config.log,
+	config.status, Makefile, *.o, etc.).
+	* AUTHORS: List main developer.
+	* NEWS: Announce initial version 0.1.0.
+	* ChangeLog: This file.
+	* THANKS: Empty file for acknowledgments.
+	* README.md: Project introduction, build instructions, license note.
+	* COPYING: Full text of GPLv3+.
+	* README: Symlink to README.md.

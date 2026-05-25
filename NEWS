@@ -1,0 +1,4 @@
+Version 0.1.0 (2026-05-26)
+* Initial project skeleton with autotools build system.
+* Basic hello world program for testing.
+* Trivial test suite with make check.

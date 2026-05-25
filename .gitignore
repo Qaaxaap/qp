@@ -1,0 +1,16 @@
+autom4te.cache/
+config.log
+config.status
+Makefile
+src/Makefile
+tests/Makefile
+
+*.o
+*.lo
+*.la
+.deps/
+.libs/
+
+src/qp
+
+*~
