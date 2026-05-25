@@ -1,5 +1,11 @@
 2026-05-26  Qaaxaap  <1515784026@qq.com>
 
+	* .github/workflows/ci.yml: New file, CI pipeline.
+	* NEWS: Update for 0.1.1.
+	* ChangeLog: Update.
+
+2026-05-26  Qaaxaap  <1515784026@qq.com>
+
 	* configure.ac: Initialize autoconf configuration for qp.
 	Defines package name, version 0.1.0, checks for C and C++ compilers.
 	* Makefile.am: Declare SUBDIRS = src tests, and extra distributed
