@@ -1,0 +1,5 @@
+# List of source files containing translatable strings.
+# Maintained manually; run 'xgettext --files-from=po/POTFILES.in' to update.
+
+src/main.cpp
+src/cli.cpp

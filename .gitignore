@@ -12,5 +12,14 @@ tests/Makefile
 .libs/
 
 src/qp
+tests/test_main
+
+config.h
+config.h.in
+stamp-h1
+
+po/Makefile
+po/*.gmo
+po/locale/
 
 *~

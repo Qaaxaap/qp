@@ -1,3 +1,10 @@
+Version 0.1.2 (2026-05-29)
+* Subcommand framework with eight commands: search, install, remove,
+  rebuild, list, update, register, unregister (all are stubs).
+* Internationalization: gettext support with Chinese (zh_CN) translation.
+* Utility module with classic fork+exec helper for subprocess execution.
+* Command-line argument parsing and dispatch via table-driven lookup.
+* po/ directory with translation infrastructure (POT, PO, LINGUAS).
 Version 0.1.1 (2026-05-26)
 * Build system: add GitHub Actions CI with automatic distcheck and release.
 Version 0.1.0 (2026-05-26)

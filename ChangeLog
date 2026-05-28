@@ -1,29 +1,59 @@
-2026-05-26  Qaaxaap  <1515784026@qq.com>
+2026-05-29  Qaaxaap  <1515784026@qq.com>
 
-	* .github/workflows/ci.yml: New file, CI pipeline.
-	* NEWS: Update for 0.1.1.
-	* ChangeLog: Update.
-
-2026-05-26  Qaaxaap  <1515784026@qq.com>
-
-	* configure.ac: Initialize autoconf configuration for qp.
-	Defines package name, version 0.1.0, checks for C and C++ compilers.
-	* Makefile.am: Declare SUBDIRS = src tests, and extra distributed
-	files (README.md, README, LICENSE, AUTHORS).
-	* src/Makefile.am: Define bin_PROGRAMS = qp, with main.cpp
-	as source. Set C++17 standard, strict warnings, and include path.
-	* src/main.cpp: Temporary hello world program for build system test.
-	* tests/Makefile.am: Add check_PROGRAMS = test_main, a trivial test
-	that always passes, and TESTS = test_main to run it on make check.
-	* tests/test_main.cpp: Trivial test returning 0, used to verify
-	the test harness.
-	* .clang-format: GNU-style formatting rules for C++ code.
-	* .gitignore: Ignore build artifacts (autom4te.cache, config.log,
-	config.status, Makefile, *.o, etc.).
-	* AUTHORS: List main developer.
-	* NEWS: Announce initial version 0.1.0.
+	* configure.ac: Bump version to 0.1.2.  Add AC_CONFIG_HEADERS
+	for config.h, and checks for libintl.h and gettext().  Add
+	po/Makefile to AC_CONFIG_FILES.
+	* Makefile.am: Add po to SUBDIRS.
+	* src/main.cpp: Rewrite.  Initialize locale and gettext in
+	main().  Parse argv[1] and dispatch to subcommand via
+	find_subcommand() table lookup.  Handle --help and --version.
+	* src/cli.hpp: New file.  Subcommand struct, function pointer
+	type, and declarations for all eight subcommand functions.
+	* src/cli.cpp: New file.  Static subcommand dispatch table.
+	print_usage() and print_version().  Eight stub implementations
+	printing "not yet implemented" via gettext _().
+	* src/util.hpp: New file.  _() and N_() gettext convenience
+	macros, i18n_init() declaration, run_command() declaration.
+	* src/util.cpp: New file.  i18n_init() initializes LC_ALL,
+	bindtextdomain, textdomain.  run_command() wraps fork(),
+	execvp(), and waitpid().
+	* src/Makefile.am: Add new source files (cli.cpp, cli.hpp,
+	util.cpp, util.hpp).  Add -I$(top_builddir) for config.h.
+	* po/POTFILES.in: New file.  List translatable source files.
+	* po/Makevars: New file.  PO processing variables.
+	* po/Makefile.am: New file.  Build and install .gmo catalogs.
+	* po/LINGUAS: New file.  List available translations (zh_CN).
+	* po/zh_CN.po: New file.  Chinese (Simplified) translation.
+	* .gitignore: Add config.h, config.h.in, stamp-h1, test_main.
+	* NEWS: Update for 0.1.2.
 	* ChangeLog: This file.
-	* THANKS: Empty file for acknowledgments.
-	* README.md: Project introduction, build instructions, license note.
-	* COPYING: Full text of GPLv3+.
-	* README: Symlink to README.md.
+
+2026-05-26  Qaaxaap  <1515784026@qq.com>
+
+		* .github/workflows/ci.yml: New file, CI pipeline.
+		* NEWS: Update for 0.1.1.
+		* ChangeLog: Update.
+
+2026-05-26  Qaaxaap  <1515784026@qq.com>
+
+		* configure.ac: Initialize autoconf configuration for qp.
+		Defines package name, version 0.1.0, checks for C and C++ compilers.
+		* Makefile.am: Declare SUBDIRS = src tests, and extra distributed
+		files (README.md, README, LICENSE, AUTHORS).
+		* src/Makefile.am: Define bin_PROGRAMS = qp, with main.cpp
+		as source. Set C++17 standard, strict warnings, and include path.
+		* src/main.cpp: Temporary hello world program for build system test.
+		* tests/Makefile.am: Add check_PROGRAMS = test_main, a trivial test
+		that always passes, and TESTS = test_main to run it on make check.
+		* tests/test_main.cpp: Trivial test returning 0, used to verify
+		the test harness.
+		* .clang-format: GNU-style formatting rules for C++ code.
+		* .gitignore: Ignore build artifacts (autom4te.cache, config.log,
+		config.status, Makefile, *.o, etc.).
+		* AUTHORS: List main developer.
+		* NEWS: Announce initial version 0.1.0.
+		* ChangeLog: This file.
+		* THANKS: Empty file for acknowledgments.
+		* README.md: Project introduction, build instructions, license note.
+		* COPYING: Full text of GPLv3+.
+		* README: Symlink to README.md.

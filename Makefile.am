@@ -1,3 +1,3 @@
-SUBDIRS = src tests
+SUBDIRS = po src tests
 
 EXTRA_DIST = README.md README AUTHORS ChangeLog NEWS THANKS

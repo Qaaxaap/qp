@@ -17,7 +17,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y autoconf automake g++ make
+          sudo apt-get install -y autoconf automake g++ make gettext
 
       - name: Bootstrap
         run: autoreconf -i
@@ -44,7 +44,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y autoconf automake g++ make
+          sudo apt-get install -y autoconf automake g++ make gettext
 
       - name: Create distribution tarball
         run: |

@@ -1,0 +1,112 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-29 03:32+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/main.cpp:35
+#, c-format
+msgid "%s: unknown command '%s'\n"
+msgstr ""
+
+#: src/main.cpp:36
+#, c-format
+msgid "Try '%s --help' for more information.\n"
+msgstr ""
+
+#: src/cli.cpp:10
+msgid "<keyword>"
+msgstr ""
+
+#: src/cli.cpp:11
+msgid "Search available packages"
+msgstr ""
+
+#: src/cli.cpp:13 src/cli.cpp:16
+msgid "<packages...>"
+msgstr ""
+
+#: src/cli.cpp:14
+msgid "Install packages and dependencies"
+msgstr ""
+
+#: src/cli.cpp:17
+msgid "Remove installed packages"
+msgstr ""
+
+#: src/cli.cpp:19
+msgid "[packages...]"
+msgstr ""
+
+#: src/cli.cpp:20
+msgid "Rebuild installed packages"
+msgstr ""
+
+#: src/cli.cpp:23
+msgid "List installed packages"
+msgstr ""
+
+#: src/cli.cpp:26
+msgid "Update package metadata from remote"
+msgstr ""
+
+#: src/cli.cpp:28
+msgid "<pkg> [version] [deps...]"
+msgstr ""
+
+#: src/cli.cpp:29
+msgid "Register manually-installed package"
+msgstr ""
+
+#: src/cli.cpp:31
+msgid "<pkg>"
+msgstr ""
+
+#: src/cli.cpp:32
+msgid "Unregister a manual package"
+msgstr ""
+
+#: src/cli.cpp:39
+#, c-format
+msgid ""
+"Usage: %s <command> [options...]\n"
+"\n"
+msgstr ""
+
+#: src/cli.cpp:40
+msgid "Commands:"
+msgstr ""
+
+#: src/cli.cpp:51
+msgid "Options:"
+msgstr ""
+
+#: src/cli.cpp:52
+msgid "Show this help"
+msgstr ""
+
+#: src/cli.cpp:54
+msgid "Show version information"
+msgstr ""
+
+#: src/cli.cpp:62
+msgid "Copyright (C) 2026 Qaaxaap.  License GPLv3+."
+msgstr ""
+
+#: src/cli.cpp:68
+#, c-format
+msgid "%s: not yet implemented.\n"
+msgstr ""
