@@ -101,7 +101,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_qp_OBJECTS = qp-main.$(OBJEXT) qp-cli.$(OBJEXT) qp-util.$(OBJEXT)
+am_qp_OBJECTS = qp-main.$(OBJEXT) qp-cli.$(OBJEXT) qp-util.$(OBJEXT) \
+	qp-makefs.$(OBJEXT)
 qp_OBJECTS = $(am_qp_OBJECTS)
 qp_LDADD = $(LDADD)
 qp_LINK = $(CXXLD) $(qp_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -122,7 +123,7 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/qp-cli.Po ./$(DEPDIR)/qp-main.Po \
-	./$(DEPDIR)/qp-util.Po
+	./$(DEPDIR)/qp-makefs.Po ./$(DEPDIR)/qp-util.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -273,7 +274,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-qp_SOURCES = main.cpp cli.cpp cli.hpp util.cpp util.hpp
+qp_SOURCES = main.cpp cli.cpp cli.hpp util.cpp util.hpp makefs.cpp makefs.hpp
 qp_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir) -DLOCALEDIR='"$(localedir)"'
 qp_CXXFLAGS = -std=c++17 -Wall -Wextra
 all: all-am
@@ -364,6 +365,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qp-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qp-main.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qp-makefs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qp-util.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -429,6 +431,20 @@ qp-util.obj: util.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='util.cpp' object='qp-util.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(qp_CPPFLAGS) $(CPPFLAGS) $(qp_CXXFLAGS) $(CXXFLAGS) -c -o qp-util.obj `if test -f 'util.cpp'; then $(CYGPATH_W) 'util.cpp'; else $(CYGPATH_W) '$(srcdir)/util.cpp'; fi`
+
+qp-makefs.o: makefs.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(qp_CPPFLAGS) $(CPPFLAGS) $(qp_CXXFLAGS) $(CXXFLAGS) -MT qp-makefs.o -MD -MP -MF $(DEPDIR)/qp-makefs.Tpo -c -o qp-makefs.o `test -f 'makefs.cpp' || echo '$(srcdir)/'`makefs.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/qp-makefs.Tpo $(DEPDIR)/qp-makefs.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='makefs.cpp' object='qp-makefs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(qp_CPPFLAGS) $(CPPFLAGS) $(qp_CXXFLAGS) $(CXXFLAGS) -c -o qp-makefs.o `test -f 'makefs.cpp' || echo '$(srcdir)/'`makefs.cpp
+
+qp-makefs.obj: makefs.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(qp_CPPFLAGS) $(CPPFLAGS) $(qp_CXXFLAGS) $(CXXFLAGS) -MT qp-makefs.obj -MD -MP -MF $(DEPDIR)/qp-makefs.Tpo -c -o qp-makefs.obj `if test -f 'makefs.cpp'; then $(CYGPATH_W) 'makefs.cpp'; else $(CYGPATH_W) '$(srcdir)/makefs.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/qp-makefs.Tpo $(DEPDIR)/qp-makefs.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='makefs.cpp' object='qp-makefs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(qp_CPPFLAGS) $(CPPFLAGS) $(qp_CXXFLAGS) $(CXXFLAGS) -c -o qp-makefs.obj `if test -f 'makefs.cpp'; then $(CYGPATH_W) 'makefs.cpp'; else $(CYGPATH_W) '$(srcdir)/makefs.cpp'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -559,6 +575,7 @@ clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 distclean: distclean-am
 	-rm -f ./$(DEPDIR)/qp-cli.Po
 	-rm -f ./$(DEPDIR)/qp-main.Po
+	-rm -f ./$(DEPDIR)/qp-makefs.Po
 	-rm -f ./$(DEPDIR)/qp-util.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -607,6 +624,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/qp-cli.Po
 	-rm -f ./$(DEPDIR)/qp-main.Po
+	-rm -f ./$(DEPDIR)/qp-makefs.Po
 	-rm -f ./$(DEPDIR)/qp-util.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
