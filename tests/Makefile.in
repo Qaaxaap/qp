@@ -87,8 +87,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-check_PROGRAMS = test_main$(EXEEXT)
-TESTS = test_main$(EXEEXT)
+check_PROGRAMS = test_main$(EXEEXT) test_makefs$(EXEEXT)
+TESTS = test_main$(EXEEXT) test_makefs$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -103,6 +103,13 @@ am_test_main_OBJECTS = test_main-test_main.$(OBJEXT)
 test_main_OBJECTS = $(am_test_main_OBJECTS)
 test_main_LDADD = $(LDADD)
 test_main_LINK = $(CXXLD) $(test_main_CXXFLAGS) $(CXXFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+am__dirstamp = $(am__leading_dot)dirstamp
+am_test_makefs_OBJECTS = test_makefs-test_makefs.$(OBJEXT) \
+	$(top_builddir)/src/test_makefs-makefs.$(OBJEXT)
+test_makefs_OBJECTS = $(am_test_makefs_OBJECTS)
+test_makefs_LDADD = $(LDADD)
+test_makefs_LINK = $(CXXLD) $(test_makefs_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -119,7 +126,10 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/test_main-test_main.Po
+am__depfiles_remade =  \
+	$(top_builddir)/src/$(DEPDIR)/test_makefs-makefs.Po \
+	./$(DEPDIR)/test_main-test_main.Po \
+	./$(DEPDIR)/test_makefs-test_makefs.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -138,8 +148,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(test_main_SOURCES)
-DIST_SOURCES = $(test_main_SOURCES)
+SOURCES = $(test_main_SOURCES) $(test_makefs_SOURCES)
+DIST_SOURCES = $(test_main_SOURCES) $(test_makefs_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -472,6 +482,9 @@ top_srcdir = @top_srcdir@
 test_main_SOURCES = test_main.cpp
 test_main_CPPFLAGS = -I$(top_srcdir)/include
 test_main_CXXFLAGS = -std=c++17 -Wall -Wextra
+test_makefs_SOURCES = test_makefs.cpp $(top_srcdir)/src/makefs.cpp
+test_makefs_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src
+test_makefs_CXXFLAGS = -std=c++17 -Wall -Wextra
 all: all-am
 
 .SUFFIXES:
@@ -512,14 +525,30 @@ clean-checkPROGRAMS:
 test_main$(EXEEXT): $(test_main_OBJECTS) $(test_main_DEPENDENCIES) $(EXTRA_test_main_DEPENDENCIES) 
 	@rm -f test_main$(EXEEXT)
 	$(AM_V_CXXLD)$(test_main_LINK) $(test_main_OBJECTS) $(test_main_LDADD) $(LIBS)
+$(top_builddir)/src/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src
+	@: >>$(top_builddir)/src/$(am__dirstamp)
+$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src/$(DEPDIR)
+	@: >>$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/test_makefs-makefs.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+
+test_makefs$(EXEEXT): $(test_makefs_OBJECTS) $(test_makefs_DEPENDENCIES) $(EXTRA_test_makefs_DEPENDENCIES) 
+	@rm -f test_makefs$(EXEEXT)
+	$(AM_V_CXXLD)$(test_makefs_LINK) $(test_makefs_OBJECTS) $(test_makefs_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f $(top_builddir)/src/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/test_makefs-makefs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_main-test_main.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_makefs-test_makefs.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -556,6 +585,34 @@ test_main-test_main.obj: test_main.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test_main.cpp' object='test_main-test_main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_main_CPPFLAGS) $(CPPFLAGS) $(test_main_CXXFLAGS) $(CXXFLAGS) -c -o test_main-test_main.obj `if test -f 'test_main.cpp'; then $(CYGPATH_W) 'test_main.cpp'; else $(CYGPATH_W) '$(srcdir)/test_main.cpp'; fi`
+
+test_makefs-test_makefs.o: test_makefs.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_makefs_CPPFLAGS) $(CPPFLAGS) $(test_makefs_CXXFLAGS) $(CXXFLAGS) -MT test_makefs-test_makefs.o -MD -MP -MF $(DEPDIR)/test_makefs-test_makefs.Tpo -c -o test_makefs-test_makefs.o `test -f 'test_makefs.cpp' || echo '$(srcdir)/'`test_makefs.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_makefs-test_makefs.Tpo $(DEPDIR)/test_makefs-test_makefs.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test_makefs.cpp' object='test_makefs-test_makefs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_makefs_CPPFLAGS) $(CPPFLAGS) $(test_makefs_CXXFLAGS) $(CXXFLAGS) -c -o test_makefs-test_makefs.o `test -f 'test_makefs.cpp' || echo '$(srcdir)/'`test_makefs.cpp
+
+test_makefs-test_makefs.obj: test_makefs.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_makefs_CPPFLAGS) $(CPPFLAGS) $(test_makefs_CXXFLAGS) $(CXXFLAGS) -MT test_makefs-test_makefs.obj -MD -MP -MF $(DEPDIR)/test_makefs-test_makefs.Tpo -c -o test_makefs-test_makefs.obj `if test -f 'test_makefs.cpp'; then $(CYGPATH_W) 'test_makefs.cpp'; else $(CYGPATH_W) '$(srcdir)/test_makefs.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_makefs-test_makefs.Tpo $(DEPDIR)/test_makefs-test_makefs.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='test_makefs.cpp' object='test_makefs-test_makefs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_makefs_CPPFLAGS) $(CPPFLAGS) $(test_makefs_CXXFLAGS) $(CXXFLAGS) -c -o test_makefs-test_makefs.obj `if test -f 'test_makefs.cpp'; then $(CYGPATH_W) 'test_makefs.cpp'; else $(CYGPATH_W) '$(srcdir)/test_makefs.cpp'; fi`
+
+$(top_builddir)/src/test_makefs-makefs.o: $(top_builddir)/src/makefs.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_makefs_CPPFLAGS) $(CPPFLAGS) $(test_makefs_CXXFLAGS) $(CXXFLAGS) -MT $(top_builddir)/src/test_makefs-makefs.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/test_makefs-makefs.Tpo -c -o $(top_builddir)/src/test_makefs-makefs.o `test -f '$(top_builddir)/src/makefs.cpp' || echo '$(srcdir)/'`$(top_builddir)/src/makefs.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/test_makefs-makefs.Tpo $(top_builddir)/src/$(DEPDIR)/test_makefs-makefs.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(top_builddir)/src/makefs.cpp' object='$(top_builddir)/src/test_makefs-makefs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_makefs_CPPFLAGS) $(CPPFLAGS) $(test_makefs_CXXFLAGS) $(CXXFLAGS) -c -o $(top_builddir)/src/test_makefs-makefs.o `test -f '$(top_builddir)/src/makefs.cpp' || echo '$(srcdir)/'`$(top_builddir)/src/makefs.cpp
+
+$(top_builddir)/src/test_makefs-makefs.obj: $(top_builddir)/src/makefs.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_makefs_CPPFLAGS) $(CPPFLAGS) $(test_makefs_CXXFLAGS) $(CXXFLAGS) -MT $(top_builddir)/src/test_makefs-makefs.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/test_makefs-makefs.Tpo -c -o $(top_builddir)/src/test_makefs-makefs.obj `if test -f '$(top_builddir)/src/makefs.cpp'; then $(CYGPATH_W) '$(top_builddir)/src/makefs.cpp'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/makefs.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/test_makefs-makefs.Tpo $(top_builddir)/src/$(DEPDIR)/test_makefs-makefs.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$(top_builddir)/src/makefs.cpp' object='$(top_builddir)/src/test_makefs-makefs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_makefs_CPPFLAGS) $(CPPFLAGS) $(test_makefs_CXXFLAGS) $(CXXFLAGS) -c -o $(top_builddir)/src/test_makefs-makefs.obj `if test -f '$(top_builddir)/src/makefs.cpp'; then $(CYGPATH_W) '$(top_builddir)/src/makefs.cpp'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/makefs.cpp'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -782,6 +839,13 @@ test_main.log: test_main$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_makefs.log: test_makefs$(EXEEXT)
+	@p='test_makefs$(EXEEXT)'; \
+	b='test_makefs'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -865,6 +929,8 @@ clean-generic:
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
+	-$(am__rm_f) $(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/src/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -874,7 +940,9 @@ clean: clean-am
 clean-am: clean-checkPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
+	-rm -f $(top_builddir)/src/$(DEPDIR)/test_makefs-makefs.Po
 	-rm -f ./$(DEPDIR)/test_main-test_main.Po
+	-rm -f ./$(DEPDIR)/test_makefs-test_makefs.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -920,7 +988,9 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f $(top_builddir)/src/$(DEPDIR)/test_makefs-makefs.Po
 	-rm -f ./$(DEPDIR)/test_main-test_main.Po
+	-rm -f ./$(DEPDIR)/test_makefs-test_makefs.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
