@@ -1,3 +1,15 @@
+Version 0.1.3 (2026-05-29)
+* MAKEFS parser: two-pass state machine that parses PKGBUILD-style build
+  description files.  Handles variable definitions with $(VAR)/${VAR}
+  expansion, [package.X] sub-package sections, [trigger] sections, shell
+  function body collection (prepare/build/check/package/package_X), and
+  heredoc multi-line strings (<<TERM ... TERM).  Function bodies are
+  preserved raw for later shell execution — no expansion is applied.
+* Comprehensive test suite: 18 test cases covering basic parsing, full
+  multi-package example, chained variable expansion, heredoc, function
+  bodies, brace expansion tolerance, backslash continuation, CRLF
+  handling, comments, duplicate keys, and error conditions.
+
 Version 0.1.2 (2026-05-29)
 * Subcommand framework with eight commands: search, install, remove,
   rebuild, list, update, register, unregister (all are stubs).

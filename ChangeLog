@@ -1,5 +1,27 @@
 2026-05-29  Qaaxaap  <1515784026@qq.com>
 
+	* configure.ac: Bump version to 0.1.3.
+	* src/makefs.hpp: New file.  Data structures for MAKEFS parser:
+	SubPackage, Trigger, MakefsSpec.  Public API: parse_makefs() and
+	parse_makefs_string().
+	* src/makefs.cpp: New file.  Full MAKEFS parser implementation.
+	Two-pass architecture: line-oriented state machine (TOP, HEREDOC,
+	FUNCTION_BODY) collects raw variables and function bodies; then
+	iterative variable expansion with circular reference detection
+	(max depth 10).  Supports [package.X] sub-package sections,
+	[trigger] sections, heredoc strings, backslash continuation,
+	CRLF stripping, and shell function body collection.
+	* tests/test_makefs.cpp: New file.  18 test cases: basic parsing,
+	full multi-package example, variable expansion, heredoc, function
+	bodies, brace expansion tolerance, backslash continuation,
+	comments, duplicate keys, CRLF, and error conditions.
+	* src/Makefile.am: Add makefs.cpp and makefs.hpp to qp_SOURCES.
+	* tests/Makefile.am: Add test_makefs check program and TESTS entry.
+	* NEWS: Update for 0.1.3.
+	* ChangeLog: This file.
+
+2026-05-29  Qaaxaap  <1515784026@qq.com>
+
 	* configure.ac: Bump version to 0.1.2.  Add AC_CONFIG_HEADERS
 	for config.h, and checks for libintl.h and gettext().  Add
 	po/Makefile to AC_CONFIG_FILES.
