@@ -13,6 +13,12 @@ tests/Makefile
 
 src/qp
 tests/test_main
+tests/test_makefs
+
+# automake parallel test harness artifacts
+*.trs
+*.log
+.dirstamp
 
 config.h
 config.h.in

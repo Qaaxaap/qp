@@ -102,7 +102,7 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_qp_OBJECTS = qp-main.$(OBJEXT) qp-cli.$(OBJEXT) qp-util.$(OBJEXT) \
-	qp-makefs.$(OBJEXT)
+	qp-makefs.$(OBJEXT) qp-config.$(OBJEXT)
 qp_OBJECTS = $(am_qp_OBJECTS)
 qp_LDADD = $(LDADD)
 qp_LINK = $(CXXLD) $(qp_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -122,8 +122,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/qp-cli.Po ./$(DEPDIR)/qp-main.Po \
-	./$(DEPDIR)/qp-makefs.Po ./$(DEPDIR)/qp-util.Po
+am__depfiles_remade = ./$(DEPDIR)/qp-cli.Po ./$(DEPDIR)/qp-config.Po \
+	./$(DEPDIR)/qp-main.Po ./$(DEPDIR)/qp-makefs.Po \
+	./$(DEPDIR)/qp-util.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -274,7 +275,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-qp_SOURCES = main.cpp cli.cpp cli.hpp util.cpp util.hpp makefs.cpp makefs.hpp
+qp_SOURCES = main.cpp cli.cpp cli.hpp util.cpp util.hpp makefs.cpp makefs.hpp config.cpp config.hpp
 qp_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir) -DLOCALEDIR='"$(localedir)"'
 qp_CXXFLAGS = -std=c++17 -Wall -Wextra
 all: all-am
@@ -364,6 +365,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qp-cli.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qp-config.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qp-main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qp-makefs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qp-util.Po@am__quote@ # am--include-marker
@@ -445,6 +447,20 @@ qp-makefs.obj: makefs.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='makefs.cpp' object='qp-makefs.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(qp_CPPFLAGS) $(CPPFLAGS) $(qp_CXXFLAGS) $(CXXFLAGS) -c -o qp-makefs.obj `if test -f 'makefs.cpp'; then $(CYGPATH_W) 'makefs.cpp'; else $(CYGPATH_W) '$(srcdir)/makefs.cpp'; fi`
+
+qp-config.o: config.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(qp_CPPFLAGS) $(CPPFLAGS) $(qp_CXXFLAGS) $(CXXFLAGS) -MT qp-config.o -MD -MP -MF $(DEPDIR)/qp-config.Tpo -c -o qp-config.o `test -f 'config.cpp' || echo '$(srcdir)/'`config.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/qp-config.Tpo $(DEPDIR)/qp-config.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='config.cpp' object='qp-config.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(qp_CPPFLAGS) $(CPPFLAGS) $(qp_CXXFLAGS) $(CXXFLAGS) -c -o qp-config.o `test -f 'config.cpp' || echo '$(srcdir)/'`config.cpp
+
+qp-config.obj: config.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(qp_CPPFLAGS) $(CPPFLAGS) $(qp_CXXFLAGS) $(CXXFLAGS) -MT qp-config.obj -MD -MP -MF $(DEPDIR)/qp-config.Tpo -c -o qp-config.obj `if test -f 'config.cpp'; then $(CYGPATH_W) 'config.cpp'; else $(CYGPATH_W) '$(srcdir)/config.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/qp-config.Tpo $(DEPDIR)/qp-config.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='config.cpp' object='qp-config.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(qp_CPPFLAGS) $(CPPFLAGS) $(qp_CXXFLAGS) $(CXXFLAGS) -c -o qp-config.obj `if test -f 'config.cpp'; then $(CYGPATH_W) 'config.cpp'; else $(CYGPATH_W) '$(srcdir)/config.cpp'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -574,6 +590,7 @@ clean-am: clean-binPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
 	-rm -f ./$(DEPDIR)/qp-cli.Po
+	-rm -f ./$(DEPDIR)/qp-config.Po
 	-rm -f ./$(DEPDIR)/qp-main.Po
 	-rm -f ./$(DEPDIR)/qp-makefs.Po
 	-rm -f ./$(DEPDIR)/qp-util.Po
@@ -623,6 +640,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/qp-cli.Po
+	-rm -f ./$(DEPDIR)/qp-config.Po
 	-rm -f ./$(DEPDIR)/qp-main.Po
 	-rm -f ./$(DEPDIR)/qp-makefs.Po
 	-rm -f ./$(DEPDIR)/qp-util.Po

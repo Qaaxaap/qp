@@ -1,3 +1,25 @@
+2026-06-05  Qaaxaap  <1515784026@qq.com>
+
+	* configure.ac: Bump version to 0.2.0.
+	* src/config.hpp: New file.  Config struct with repo_url, repo_dir,
+	build_dir, log_dir fields and load_config() declaration.
+	* src/config.cpp: New file.  Config system: layered configuration
+	parsing from /etc/qp.conf and ~/.config/qp/qp.conf.  KEY=VALUE
+	format with comment and quote support.  Override precedence:
+	user config overrides system config.
+	* src/cli.cpp: Implement cmd_update() with git clone/pull of the qur
+	package repository, followed by generate_index() that walks the
+	packages/ directory tree, parses each MAKEFS, and writes a TSV index
+	to meta/index.  Implement cmd_search() with case-insensitive
+	keyword matching against package name and description fields in the
+	index, with source-prefix display for subpackages.
+	* src/Makefile.am: Add config.cpp and config.hpp to qp_SOURCES.
+	* .gitignore: Add automake parallel test harness artifacts
+	(*.trs, *.log, .dirstamp) and tests/test_makefs.
+	* po/zh_CN.gmo: Remove compiled translation from version control.
+	* NEWS: Update for 0.2.0.
+	* ChangeLog: This file.
+
 2026-05-29  Qaaxaap  <1515784026@qq.com>
 
 	* configure.ac: Bump version to 0.1.3.

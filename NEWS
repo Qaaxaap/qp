@@ -1,3 +1,12 @@
+Version 0.2.0 (2026-06-05)
+* Configuration system: layered config from /etc/qp.conf and
+  ~/.config/qp/qp.conf with KEY=VALUE format.
+* Update command: clone or pull the qur package repository
+  and regenerate the package index from all MAKEFS scripts.
+* Search command: case-insensitive keyword search across
+  package names and descriptions from the local index.
+* Build system: ignore automake parallel test harness artifacts.
+
 Version 0.1.3 (2026-05-29)
 * MAKEFS parser: two-pass state machine that parses PKGBUILD-style build
   description files.  Handles variable definitions with $(VAR)/${VAR}
