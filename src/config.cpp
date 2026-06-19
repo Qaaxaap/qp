@@ -29,14 +29,12 @@ unquote (const std::string &v)
 static void
 apply (Config &cfg, const std::string &key, const std::string &value)
 {
-  if (key == "REPO_URL")
-    cfg.repo_url = unquote (value);
-  else if (key == "REPO_DIR")
-    cfg.repo_dir = unquote (value);
+  if (key == "QUR_URL" || key == "REPO_URL")
+    cfg.qur_url = unquote (value);
+  else if (key == "QUR_DIR" || key == "REPO_DIR")
+    cfg.qur_dir = unquote (value);
   else if (key == "BUILD_DIR")
     cfg.build_dir = unquote (value);
-  else if (key == "LOG_DIR")
-    cfg.log_dir = unquote (value);
 }
 
 static void

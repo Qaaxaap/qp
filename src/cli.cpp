@@ -140,15 +140,15 @@ cmd_update (int argc, char **argv)
   Config cfg = load_config ();
 
   /* Create parent directory. */
-  size_t slash = cfg.repo_dir.rfind ('/');
+  size_t slash = cfg.qur_dir.rfind ('/');
   if (slash != std::string::npos)
-    run_command ({ "mkdir", "-p", cfg.repo_dir.substr (0, slash) });
+    run_command ({ "mkdir", "-p", cfg.qur_dir.substr (0, slash) });
 
   struct stat st;
-  if (stat (cfg.repo_dir.c_str (), &st) != 0)
+  if (stat (cfg.qur_dir.c_str (), &st) != 0)
     {
-      std::printf (_ ("Cloning %s...\n"), cfg.repo_url.c_str ());
-      int rc = run_command ({ "git", "clone", cfg.repo_url, cfg.repo_dir });
+      std::printf (_ ("Cloning %s...\n"), cfg.qur_url.c_str ());
+      int rc = run_command ({ "git", "clone", cfg.qur_url, cfg.qur_dir });
       if (rc != 0)
         {
           std::printf (_ ("error: git clone failed\n"));
@@ -157,12 +157,12 @@ cmd_update (int argc, char **argv)
     }
   else
     {
-      std::string dotgit = cfg.repo_dir + "/.git";
+      std::string dotgit = cfg.qur_dir + "/.git";
       if (stat (dotgit.c_str (), &st) == 0)
         {
-          std::printf (_ ("Updating %s...\n"), cfg.repo_dir.c_str ());
+          std::printf (_ ("Updating %s...\n"), cfg.qur_dir.c_str ());
           int rc = run_command (
-              { "git", "-C", cfg.repo_dir, "pull", "--ff-only" });
+              { "git", "-C", cfg.qur_dir, "pull", "--ff-only" });
           if (rc != 0)
             {
               std::printf (_ ("error: git pull failed\n"));
@@ -172,7 +172,7 @@ cmd_update (int argc, char **argv)
     }
 
   std::string err;
-  int count = generate_index (cfg.repo_dir, err);
+  int count = generate_index (cfg.qur_dir, err);
   if (count < 0)
     {
       std::printf ("%s\n", err.c_str ());
@@ -195,7 +195,7 @@ cmd_search (int argc, char **argv)
   Config cfg = load_config ();
   std::string keyword = argv[1];
 
-  std::ifstream in (cfg.repo_dir + "/meta/index");
+  std::ifstream in (cfg.qur_dir + "/meta/index");
   if (!in)
     {
       std::printf (_ ("No package index found. Run 'qp update' first.\n"));
@@ -290,6 +290,21 @@ run_makefs_build (const qp::MakefsSpec &spec, const Config &cfg)
   script << "export BUILD_DIR='" << build << "'\n";
   script << "export SRCDIR='" << srcdir << "'\n";
   script << "mkdir -p \"$STAGE\" \"$BUILD_DIR\" \"$SRCDIR\"\n";
+  std::string root = lfspkg::default_target_root ().string ();
+  script << "export CFLAGS=\"-I" << root
+         << "/usr/include ${CFLAGS:+ $CFLAGS}\"\n";
+  script << "export CPPFLAGS=\"-I" << root
+         << "/usr/include ${CPPFLAGS:+ $CPPFLAGS}\"\n";
+  script << "export LDFLAGS=\"-L" << root
+         << "/usr/lib -Wl,-rpath," << root
+         << "/usr/lib ${LDFLAGS:+ $LDFLAGS}\"\n";
+  script << "export PKG_CONFIG_PATH=\"" << root
+         << "/usr/lib/pkgconfig:" << root
+         << "/usr/share/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}\"\n";
+  script << "export LIBRARY_PATH=\"" << root
+         << "/usr/lib${LIBRARY_PATH:+:$LIBRARY_PATH}\"\n";
+  script << "export LD_LIBRARY_PATH=\"" << root
+         << "/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}\"\n";
   script << "cd \"$SRCDIR\"\n";
 
   /* Emit MAKEFS metadata as bash variables (no spaces around =). */
@@ -361,7 +376,7 @@ install_package (const Config &cfg, lfspkg::PackageDB &db,
       return 0;
     }
 
-  std::string makefs_path = cfg.repo_dir + "/packages/" + name + "/MAKEFS";
+  std::string makefs_path = cfg.qur_dir + "/packages/" + name + "/MAKEFS";
 
   qp::MakefsSpec spec;
   std::string err;
@@ -436,7 +451,7 @@ rebuild_package (const Config &cfg, lfspkg::PackageDB &db,
       return 1;
     }
 
-  std::string makefs_path = cfg.repo_dir + "/packages/" + name + "/MAKEFS";
+  std::string makefs_path = cfg.qur_dir + "/packages/" + name + "/MAKEFS";
 
   qp::MakefsSpec spec;
   std::string err;
@@ -531,7 +546,7 @@ static std::map<std::string, std::string>
 load_index_versions (const Config &cfg)
 {
   std::map<std::string, std::string> vers;
-  std::ifstream in (cfg.repo_dir + "/meta/index");
+  std::ifstream in (cfg.qur_dir + "/meta/index");
   if (!in)
     return vers;
   std::string line;
@@ -614,7 +629,7 @@ cmd_install (int argc, char **argv)
 
   /* Ensure repo is available. */
   struct stat st;
-  if (stat (cfg.repo_dir.c_str (), &st) != 0)
+  if (stat (cfg.qur_dir.c_str (), &st) != 0)
     cmd_update (0, nullptr);
 
   std::set<std::string> installing;
@@ -650,7 +665,7 @@ cmd_rebuild (int argc, char **argv)
 
   /* Ensure repo is available. */
   struct stat st;
-  if (stat (cfg.repo_dir.c_str (), &st) != 0)
+  if (stat (cfg.qur_dir.c_str (), &st) != 0)
     cmd_update (0, nullptr);
 
   std::set<std::string> rebuilt;
@@ -714,7 +729,7 @@ cmd_upgrade (int argc, char **argv)
 
   /* Ensure repo is available. */
   struct stat st;
-  if (stat (cfg.repo_dir.c_str (), &st) != 0)
+  if (stat (cfg.qur_dir.c_str (), &st) != 0)
     cmd_update (0, nullptr);
 
   auto index_vers = load_index_versions (cfg);

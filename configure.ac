@@ -1,4 +1,4 @@
-AC_INIT([qp], [0.2.2], [github.com/Qaaxaap/qp/issues])
+AC_INIT([qp], [0.2.3], [github.com/Qaaxaap/qp/issues])
 
 AC_CONFIG_SRCDIR([src/main.cpp])
 AM_INIT_AUTOMAKE([foreign subdir-objects])

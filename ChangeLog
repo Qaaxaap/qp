@@ -1,5 +1,19 @@
 2026-06-19  Qaaxaap  <1515784026@qq.com>
 
+	* configure.ac: Bump version to 0.2.3.
+	* src/config.hpp (Config): Rename repo_url to qur_url, repo_dir to
+	qur_dir.  Remove unused log_dir field.
+	* src/config.cpp: Accept QUR_URL / QUR_DIR keys (new naming).
+	REPO_URL / REPO_DIR are still accepted for backward compatibility.
+	* src/cli.cpp (run_makefs_build): Export CFLAGS, CPPFLAGS, LDFLAGS,
+	PKG_CONFIG_PATH, LIBRARY_PATH, LD_LIBRARY_PATH pointing to
+	LFSPKG_ROOT so builds can find installed dependency headers
+	and libraries.
+	* NEWS: Update for 0.2.3.
+	* ChangeLog: This file.
+
+2026-06-19  Qaaxaap  <1515784026@qq.com>
+
 	* src/cli.cpp (install_package): Add installing set parameter for cycle
 	detection.  Print warning and skip when circular dependency detected
 	instead of infinite recursion.

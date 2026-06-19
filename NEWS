@@ -1,3 +1,9 @@
+Version 0.2.3 (2026-06-19)
+* Configuration naming: REPO_URL→QUR_URL, REPO_DIR→QUR_DIR (old keys
+  still accepted).  Removed unused LOG_DIR.
+* Build environment: CFLAGS, LDFLAGS, PKG_CONFIG_PATH, LIBRARY_PATH
+  now exported in generated build scripts, pointing to LFSPKG_ROOT.
+
 Version 0.2.2 (2026-06-19)
 * Circular dependency detection: install, topo_sort, and rebuild_cascade
   all detect and warn about dependency cycles instead of infinite looping.
