@@ -1,5 +1,16 @@
 2026-06-19  Qaaxaap  <1515784026@qq.com>
 
+	* configure.ac: Bump version to 0.2.2.
+	* src/cli.cpp: Fix MAKEFS build script generation to emit proper bash
+	function definitions from parsed MakefsSpec.  Expand $(NAME),
+	$(VERSION), $(RELEASE) in function bodies.
+	Implement cmd_remove(), cmd_register(), cmd_unregister().
+	Remove unused not_impl().
+	* NEWS: Update for 0.2.2.
+	* ChangeLog: This file.
+
+2026-06-19  Qaaxaap  <1515784026@qq.com>
+
 	* configure.ac: Add --with-lfspkg=DIR option and header check.
 	Link against lfspkg static library for package database API.
 	* src/Makefile.am: Add @LFSPKG_CPPFLAGS@ and @LFSPKG_LIBS@

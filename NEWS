@@ -1,3 +1,15 @@
+Version 0.2.2 (2026-06-19)
+* Fix MAKEFS build script generation: emit proper bash function definitions
+  from parsed MakefsSpec instead of sourcing raw MAKEFS files.
+* Variable expansion: $(NAME), $(VERSION), $(RELEASE) in MAKEFS function
+  bodies are now correctly substituted before execution.
+* Remove, register, and unregister commands are now fully implemented.
+* All nine subcommands (search, install, remove, rebuild, upgrade, list,
+  update, register, unregister) are implemented.
+* Four new MAKEFS packages in qur: zlib, openssl, expat, pcre2.
+* GNU coding standard conformance: clang-format GNU style applied to all
+  C++ source files with consistent PointerAlignment: Right.
+
 Version 0.2.1 (2026-06-19)
 * Install command: fully implemented with recursive dependency resolution,
   MAKEFS build execution, and lfspkg package registration.
