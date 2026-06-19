@@ -1,4 +1,6 @@
 Version 0.2.2 (2026-06-19)
+* Circular dependency detection: install, topo_sort, and rebuild_cascade
+  all detect and warn about dependency cycles instead of infinite looping.
 * Fix MAKEFS build script generation: emit proper bash function definitions
   from parsed MakefsSpec instead of sourcing raw MAKEFS files.
 * Variable expansion: $(NAME), $(VERSION), $(RELEASE) in MAKEFS function

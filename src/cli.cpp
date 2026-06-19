@@ -349,10 +349,11 @@ run_makefs_build (const qp::MakefsSpec &spec, const Config &cfg)
 }
 
 /* Install a single package: parse MAKEFS, build, register in db.
+   The 'installing' set tracks the current call chain to detect cycles.
    Returns 0 on success. */
 static int
 install_package (const Config &cfg, lfspkg::PackageDB &db,
-                 const std::string &name)
+                 const std::string &name, std::set<std::string> &installing)
 {
   if (db.installed (name))
     {
@@ -370,17 +371,31 @@ install_package (const Config &cfg, lfspkg::PackageDB &db,
       return 1;
     }
 
+  /* Mark this package as being installed (for cycle detection). */
+  installing.insert (name);
+
   /* Install runtime dependencies first. */
   for (const auto &dep : spec.depends)
     {
       if (!db.installed (dep))
         {
+          if (installing.count (dep))
+            {
+              std::printf (_ ("warning: cycle detected: %s <-> %s\n"),
+                           name.c_str (), dep.c_str ());
+              continue;
+            }
           std::printf (_ ("Installing dependency: %s\n"), dep.c_str ());
-          int rc = install_package (cfg, db, dep);
+          int rc = install_package (cfg, db, dep, installing);
           if (rc != 0)
-            return rc;
+            {
+              installing.erase (name);
+              return rc;
+            }
         }
     }
+
+  installing.erase (name);
 
   /* Build the package. */
   std::string stage = run_makefs_build (spec, cfg);
@@ -475,7 +490,11 @@ topo_sort (lfspkg::PackageDB &db, const std::vector<std::string> &pkgs)
           if (visited.count (cur))
             return true;
           if (in_stack.count (cur))
-            return true; /* cycle — skip */
+            {
+              std::printf (_ ("warning: cycle detected, skipping %s\n"),
+                           cur.c_str ());
+              return true; /* cycle — skip to avoid infinite loop */
+            }
           if (!pkg_set.count (cur))
             {
               visited.insert (cur);
@@ -531,10 +550,13 @@ load_index_versions (const Config &cfg)
   return vers;
 }
 
-/* Rebuild a set of packages, cascading to newly-stale packages. */
+/* Rebuild a set of packages, cascading to newly-stale packages.
+   The 'rebuilt' set prevents re-rebuilding the same package within
+   one cascade chain (guards against cyclic built_deps oscillation). */
 static int
 rebuild_cascade (const Config &cfg, lfspkg::PackageDB &db,
-                 const std::vector<std::string> &initial)
+                 const std::vector<std::string> &initial,
+                 std::set<std::string> &rebuilt)
 {
   if (initial.empty ())
     {
@@ -542,13 +564,26 @@ rebuild_cascade (const Config &cfg, lfspkg::PackageDB &db,
       return 0;
     }
 
-  std::vector<std::string> ordered = topo_sort (db, initial);
+  /* Filter out packages already rebuilt in this cascade. */
+  std::vector<std::string> to_build;
+  for (const auto &pkg : initial)
+    {
+      if (rebuilt.count (pkg))
+        continue;
+      to_build.push_back (pkg);
+    }
+
+  if (to_build.empty ())
+    return 0;
+
+  std::vector<std::string> ordered = topo_sort (db, to_build);
 
   for (const auto &pkg : ordered)
     {
       int rc = rebuild_package (cfg, db, pkg);
       if (rc != 0)
         return rc;
+      rebuilt.insert (pkg);
     }
 
   /* Check for newly-stale packages (cascade). */
@@ -557,7 +592,7 @@ rebuild_cascade (const Config &cfg, lfspkg::PackageDB &db,
     {
       std::printf (_ ("%d package(s) now stale, rebuilding...\n"),
                    static_cast<int> (new_stale.size ()));
-      return rebuild_cascade (cfg, db, new_stale);
+      return rebuild_cascade (cfg, db, new_stale, rebuilt);
     }
 
   return 0;
@@ -582,10 +617,11 @@ cmd_install (int argc, char **argv)
   if (stat (cfg.repo_dir.c_str (), &st) != 0)
     cmd_update (0, nullptr);
 
+  std::set<std::string> installing;
   int rc = 0;
   for (int i = 1; i < argc; ++i)
     {
-      rc = install_package (cfg, db, argv[i]);
+      rc = install_package (cfg, db, argv[i], installing);
       if (rc != 0)
         break;
     }
@@ -598,7 +634,8 @@ cmd_install (int argc, char **argv)
         {
           std::printf (_ ("%d package(s) stale, rebuilding...\n"),
                        static_cast<int> (stale.size ()));
-          rc = rebuild_cascade (cfg, db, stale);
+          std::set<std::string> rebuilt;
+          rc = rebuild_cascade (cfg, db, stale, rebuilt);
         }
     }
 
@@ -616,6 +653,8 @@ cmd_rebuild (int argc, char **argv)
   if (stat (cfg.repo_dir.c_str (), &st) != 0)
     cmd_update (0, nullptr);
 
+  std::set<std::string> rebuilt;
+
   if (argc < 2 || std::strcmp (argv[1], "--stale") == 0)
     {
       auto stale = lfspkg::find_stale_packages (db);
@@ -626,7 +665,7 @@ cmd_rebuild (int argc, char **argv)
         }
       std::printf (_ ("Rebuilding %d stale package(s)...\n"),
                    static_cast<int> (stale.size ()));
-      return rebuild_cascade (cfg, db, stale);
+      return rebuild_cascade (cfg, db, stale, rebuilt);
     }
 
   if (std::strcmp (argv[1], "--all") == 0)
@@ -639,7 +678,7 @@ cmd_rebuild (int argc, char **argv)
         }
       std::printf (_ ("Rebuilding all %d package(s)...\n"),
                    static_cast<int> (all.size ()));
-      return rebuild_cascade (cfg, db, all);
+      return rebuild_cascade (cfg, db, all, rebuilt);
     }
 
   /* Rebuild specific packages. */
@@ -649,6 +688,7 @@ cmd_rebuild (int argc, char **argv)
       rc = rebuild_package (cfg, db, argv[i]);
       if (rc != 0)
         break;
+      rebuilt.insert (argv[i]);
     }
 
   /* Cascade after explicit rebuilds. */
@@ -659,7 +699,7 @@ cmd_rebuild (int argc, char **argv)
         {
           std::printf (_ ("%d package(s) now stale, rebuilding...\n"),
                        static_cast<int> (stale.size ()));
-          rc = rebuild_cascade (cfg, db, stale);
+          rc = rebuild_cascade (cfg, db, stale, rebuilt);
         }
     }
 
@@ -749,7 +789,8 @@ cmd_upgrade (int argc, char **argv)
 
   std::printf (_ ("Upgrading %d package(s)...\n"),
                static_cast<int> (to_upgrade.size ()));
-  return rebuild_cascade (cfg, db, to_upgrade);
+  std::set<std::string> rebuilt;
+  return rebuild_cascade (cfg, db, to_upgrade, rebuilt);
 }
 
 int

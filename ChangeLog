@@ -1,5 +1,18 @@
 2026-06-19  Qaaxaap  <1515784026@qq.com>
 
+	* src/cli.cpp (install_package): Add installing set parameter for cycle
+	detection.  Print warning and skip when circular dependency detected
+	instead of infinite recursion.
+	(topo_sort): Detect cycles in dependency graph via in_stack set.
+	Print warning and skip cyclic nodes instead of infinite looping.
+	(rebuild_cascade): Add rebuilt set to prevent re-rebuilding the
+	same package across cascade iterations.
+	(cmd_install, cmd_rebuild, cmd_upgrade): Pass installing/rebuilt
+	sets through call chains.
+	* ChangeLog: This file.
+
+2026-06-19  Qaaxaap  <1515784026@qq.com>
+
 	* configure.ac: Bump version to 0.2.2.
 	* src/cli.cpp: Fix MAKEFS build script generation to emit proper bash
 	function definitions from parsed MakefsSpec.  Expand $(NAME),
