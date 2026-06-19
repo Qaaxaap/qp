@@ -30,6 +30,21 @@ i18n_init ()
 }
 
 int
+download_file (const std::string &url, const std::string &dest_path)
+{
+  /* Prefer curl, then wget. */
+  int rc = run_command (
+      { "curl", "-L", "-o", dest_path, "--retry", "3", "--progress-bar", "-f",
+        url });
+  if (rc == 0)
+    return 0;
+  rc = run_command ({ "wget", "-O", dest_path, "-q", "--show-progress", url });
+  if (rc == 0)
+    return 0;
+  return -1;
+}
+
+int
 run_command (const std::vector<std::string> &args)
 {
   if (args.empty ())

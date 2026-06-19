@@ -275,6 +275,46 @@ run_makefs_build (const qp::MakefsSpec &spec, const Config &cfg)
   run_command ({ "mkdir", "-p", build });
   run_command ({ "mkdir", "-p", srcdir });
 
+  /* Expand $(VAR) references in a string. */
+  auto expand_vars = [&spec] (std::string body) -> std::string
+    {
+      auto subst = [&body] (const std::string &token, const std::string &value)
+        {
+          size_t pos = 0;
+          while ((pos = body.find (token, pos)) != std::string::npos)
+            {
+              body.replace (pos, token.size (), value);
+              pos += value.size ();
+            }
+        };
+      subst ("$(NAME)", spec.name);
+      subst ("$(VERSION)", spec.version);
+      subst ("$(RELEASE)", spec.release);
+      return body;
+    };
+
+  /* Download source tarballs. */
+  for (const auto &src_url : spec.sources)
+    {
+      std::string url = expand_vars (src_url);
+      std::string filename = url.substr (url.rfind ('/') + 1);
+      std::string dest = srcdir + "/" + filename;
+      struct stat st;
+      if (stat (dest.c_str (), &st) == 0)
+        std::printf (_ ("  Source %s already present.\n"),
+                     filename.c_str ());
+      else
+        {
+          std::printf (_ ("  Downloading %s...\n"), filename.c_str ());
+          if (download_file (url, dest) != 0)
+            {
+              std::printf (_ ("error: download failed for %s (%s)\n"),
+                           filename.c_str (), url.c_str ());
+              return "";
+            }
+        }
+    }
+
   /* Build a wrapper script that defines MAKEFS variables and
      functions, then calls prepare + build + package. */
   std::string script_path = cfg.build_dir + "/_build_" + name + ".sh";
@@ -312,23 +352,6 @@ run_makefs_build (const qp::MakefsSpec &spec, const Config &cfg)
   script << "VERSION='" << spec.version << "'\n";
   script << "RELEASE='" << spec.release << "'\n";
 
-  /* Expand $(VAR) references in a string. */
-  auto expand_vars = [&spec] (std::string body) -> std::string
-    {
-      auto subst = [&body] (const std::string &token, const std::string &value)
-        {
-          size_t pos = 0;
-          while ((pos = body.find (token, pos)) != std::string::npos)
-            {
-              body.replace (pos, token.size (), value);
-              pos += value.size ();
-            }
-        };
-      subst ("$(NAME)", spec.name);
-      subst ("$(VERSION)", spec.version);
-      subst ("$(RELEASE)", spec.release);
-      return body;
-    };
 
   /* Emit functions as proper bash function definitions. */
   for (const auto &[fname, fbody] : spec.functions)

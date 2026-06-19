@@ -10,3 +10,5 @@
 void i18n_init ();
 
 int run_command (const std::vector<std::string> &args);
+
+int download_file (const std::string &url, const std::string &dest_path);
