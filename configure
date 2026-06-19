@@ -629,6 +629,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+LFSPKG_LIBS
+LFSPKG_CPPFLAGS
 am__fastdepCXX_FALSE
 am__fastdepCXX_TRUE
 CXXDEPMODE
@@ -728,6 +730,7 @@ ac_user_opts='
 enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
+with_lfspkg
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1369,6 +1372,11 @@ Optional Features:
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-lfspkg=DIR       path to lfspkg source tree (default: ../lfspkg)
 
 Some influential environment variables:
   CC          C compiler command
@@ -5315,6 +5323,56 @@ else case e in #(
   e) as_fn_error $? "gettext() not found" "$LINENO" 5 ;;
 esac
 fi
+
+
+
+# Check whether --with-lfspkg was given.
+if test ${with_lfspkg+y}
+then :
+  withval=$with_lfspkg; LFSPKG_DIR="$withval"
+else case e in #(
+  e) LFSPKG_DIR="../lfspkg" ;;
+esac
+fi
+
+
+LFSPKG_CPPFLAGS="-I$LFSPKG_DIR/include"
+LFSPKG_LIBS="$LFSPKG_DIR/src/liblfspkg.a"
+
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+{ printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking for lfspkg headers" >&5
+printf %s "checking for lfspkg headers... " >&6; }
+save_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="-std=c++17 $LFSPKG_CPPFLAGS"
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <lfspkg/db.hpp>
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"
+then :
+  { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf '%s\n' "yes" >&6; }
+else case e in #(
+  e) as_fn_error $? "lfspkg headers not found in $LFSPKG_DIR/include" "$LINENO" 5 ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+CXXFLAGS="$save_CXXFLAGS"
+
+
 
 
 ac_config_files="$ac_config_files Makefile po/Makefile src/Makefile tests/Makefile"

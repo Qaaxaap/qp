@@ -5,13 +5,19 @@
 #include "makefs.hpp"
 #include "util.hpp"
 
+#include <lfspkg/db.hpp>
+#include <lfspkg/package.hpp>
+
 #include <cctype>
 #include <cstdio>
 #include <cstring>
 #include <dirent.h>
 #include <fstream>
+#include <set>
 #include <sstream>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 static const Subcommand subcommands[]
     = { { "search", N_ ("<keyword>"),
@@ -23,9 +29,12 @@ static const Subcommand subcommands[]
         { "remove", N_ ("<packages...>"),
           N_ ("Remove installed packages"),
           cmd_remove },
-        { "rebuild", N_ ("[packages...]"),
+        { "rebuild", N_ ("[--stale|--all|<pkg>]"),
           N_ ("Rebuild installed packages"),
           cmd_rebuild },
+        { "upgrade", N_ ("[packages...]"),
+          N_ ("Upgrade installed packages to latest version"),
+          cmd_upgrade },
         { "list", "",
           N_ ("List installed packages"),
           cmd_list },
@@ -265,14 +274,504 @@ cmd_search (int argc, char **argv)
   return 0;
 }
 
+/* ------------------------------------------------------------------ */
+/* install / rebuild helpers                                           */
+/* ------------------------------------------------------------------ */
+
+static lfspkg::PackageDB
+make_db (const Config &cfg)
+{
+  (void)cfg;
+  return lfspkg::PackageDB (lfspkg::default_db_root ());
+}
+
+/* Run a MAKEFS build: prepare, build, package.
+   Returns the stage directory path. */
+static std::string
+run_makefs_build (const std::string &makefs_path, const Config &cfg,
+                  const std::string &name)
+{
+  std::string stage = cfg.build_dir + "/stage/" + name;
+  std::string build = cfg.build_dir + "/build/" + name;
+  std::string srcdir = cfg.build_dir + "/source/" + name;
+
+  /* Create build directories. */
+  run_command ({ "mkdir", "-p", stage });
+  run_command ({ "mkdir", "-p", build });
+  run_command ({ "mkdir", "-p", srcdir });
+
+  /* Build a wrapper script that sources the MAKEFS and calls
+     prepare + build + package. */
+  std::string script_path = cfg.build_dir + "/_build_" + name + ".sh";
+  std::ofstream script (script_path);
+  if (!script)
+    {
+      std::printf (_ ("error: cannot write build script\n"));
+      return "";
+    }
+  script << "#!/bin/bash\n";
+  script << "set -e\n";
+  script << "export STAGE='" << stage << "'\n";
+  script << "export BUILD_DIR='" << build << "'\n";
+  script << "export SRCDIR='" << srcdir << "'\n";
+  script << "mkdir -p \"$STAGE\" \"$BUILD_DIR\" \"$SRCDIR\"\n";
+  script << "cd \"$SRCDIR\"\n";
+  script << "source '" << makefs_path << "'\n";
+  script << "type prepare &>/dev/null && prepare\n";
+  script << "type build &>/dev/null && build\n";
+  script << "type package &>/dev/null && package\n";
+  script.close ();
+
+  run_command ({ "chmod", "+x", script_path });
+
+  std::printf (_ ("Building %s...\n"), name.c_str ());
+  int rc = run_command ({ "bash", script_path });
+  if (rc != 0)
+    {
+      std::printf (_ ("error: build failed for %s (exit %d)\n"),
+                   name.c_str (), rc);
+      return "";
+    }
+
+  return stage;
+}
+
+/* Install a single package: parse MAKEFS, build, register in db.
+   Returns 0 on success. */
+static int
+install_package (const Config &cfg, lfspkg::PackageDB &db,
+                 const std::string &name)
+{
+  if (db.installed (name))
+    {
+      std::printf (_ ("%s: already installed.\n"), name.c_str ());
+      return 0;
+    }
+
+  std::string makefs_path
+      = cfg.repo_dir + "/packages/" + name + "/MAKEFS";
+
+  qp::MakefsSpec spec;
+  std::string err;
+  if (!qp::parse_makefs (makefs_path, spec, err))
+    {
+      std::printf (_ ("error: %s\n"), err.c_str ());
+      return 1;
+    }
+
+  /* Install runtime dependencies first. */
+  for (const auto &dep : spec.depends)
+    {
+      if (!db.installed (dep))
+        {
+          std::printf (_ ("Installing dependency: %s\n"), dep.c_str ());
+          int rc = install_package (cfg, db, dep);
+          if (rc != 0)
+            return rc;
+        }
+    }
+
+  /* Build the package. */
+  std::string stage = run_makefs_build (makefs_path, cfg, name);
+  if (stage.empty ())
+    return 1;
+
+  /* Register in lfspkg. */
+  lfspkg::PackageSpec pkg_spec;
+  pkg_spec.name = spec.name;
+  pkg_spec.version = spec.version;
+  pkg_spec.stage_dir = stage;
+  pkg_spec.deps = spec.depends;
+
+  try
+    {
+      lfspkg::apply_install_or_upgrade (db, pkg_spec, false);
+    }
+  catch (const std::exception &e)
+    {
+      std::printf ("%s: %s\n", _ ("install error"), e.what ());
+      return 1;
+    }
+
+  std::printf (_ ("Installed %s %s\n"), spec.name.c_str (),
+               spec.version.c_str ());
+  return 0;
+}
+
+/* Rebuild a package (already installed). */
+static int
+rebuild_package (const Config &cfg, lfspkg::PackageDB &db,
+                 const std::string &name)
+{
+  if (!db.installed (name))
+    {
+      std::printf (_ ("%s: not installed. Use 'qp install'.\n"),
+                   name.c_str ());
+      return 1;
+    }
+
+  std::string makefs_path
+      = cfg.repo_dir + "/packages/" + name + "/MAKEFS";
+
+  qp::MakefsSpec spec;
+  std::string err;
+  if (!qp::parse_makefs (makefs_path, spec, err))
+    {
+      std::printf (_ ("error: %s\n"), err.c_str ());
+      return 1;
+    }
+
+  std::string stage = run_makefs_build (makefs_path, cfg, name);
+  if (stage.empty ())
+    return 1;
+
+  lfspkg::PackageSpec pkg_spec;
+  pkg_spec.name = spec.name;
+  pkg_spec.version = spec.version;
+  pkg_spec.stage_dir = stage;
+  pkg_spec.deps = spec.depends;
+
+  try
+    {
+      lfspkg::apply_install_or_upgrade (db, pkg_spec, true);
+    }
+  catch (const std::exception &e)
+    {
+      std::printf ("%s: %s\n", _ ("upgrade error"), e.what ());
+      return 1;
+    }
+
+  std::printf (_ ("Rebuilt %s %s\n"), spec.name.c_str (),
+               spec.version.c_str ());
+  return 0;
+}
+
+/* Sort packages so dependencies come first. */
+static std::vector<std::string>
+topo_sort (lfspkg::PackageDB &db, const std::vector<std::string> &pkgs)
+{
+  std::set<std::string> pkg_set (pkgs.begin (), pkgs.end ());
+  std::vector<std::string> sorted;
+  std::set<std::string> visited;
+
+  for (const auto &p : pkgs)
+    {
+      /* Walk dep chain of p, emitting deps before p. */
+      std::vector<std::string> stack;
+      std::set<std::string> in_stack;
+
+      auto push = [&] (auto &&self, const std::string &cur) -> bool {
+        if (visited.count (cur))
+          return true;
+        if (in_stack.count (cur))
+          return true; /* cycle — skip */
+        if (!pkg_set.count (cur))
+          {
+            visited.insert (cur);
+            return true;
+          }
+        in_stack.insert (cur);
+
+        try
+          {
+            auto meta = db.read_meta (cur);
+            for (const auto &dep : meta.deps)
+              {
+                if (!self (self, dep))
+                  return false;
+              }
+          }
+        catch (...)
+          {
+          }
+
+        in_stack.erase (cur);
+        visited.insert (cur);
+        sorted.push_back (cur);
+        return true;
+      };
+      push (push, p);
+    }
+
+  return sorted;
+}
+
+/* Read repo index, return name→version map. */
+static std::map<std::string, std::string>
+load_index_versions (const Config &cfg)
+{
+  std::map<std::string, std::string> vers;
+  std::ifstream in (cfg.repo_dir + "/meta/index");
+  if (!in)
+    return vers;
+  std::string line;
+  while (std::getline (in, line))
+    {
+      if (line.empty () || line[0] == '#')
+        continue;
+      std::istringstream ss (line);
+      std::vector<std::string> fields;
+      std::string f;
+      while (std::getline (ss, f, '\t'))
+        fields.push_back (f);
+      if (fields.size () >= 3)
+        vers[fields[1]] = fields[2];
+    }
+  return vers;
+}
+
+/* Rebuild a set of packages, cascading to newly-stale packages. */
+static int
+rebuild_cascade (const Config &cfg, lfspkg::PackageDB &db,
+                 const std::vector<std::string> &initial)
+{
+  if (initial.empty ())
+    {
+      std::printf (_ ("Nothing to rebuild.\n"));
+      return 0;
+    }
+
+  std::vector<std::string> ordered = topo_sort (db, initial);
+
+  for (const auto &pkg : ordered)
+    {
+      int rc = rebuild_package (cfg, db, pkg);
+      if (rc != 0)
+        return rc;
+    }
+
+  /* Check for newly-stale packages (cascade). */
+  auto new_stale = lfspkg::find_stale_packages (db);
+  if (!new_stale.empty ())
+    {
+      std::printf (_ ("%d package(s) now stale, rebuilding...\n"),
+                   static_cast<int> (new_stale.size ()));
+      return rebuild_cascade (cfg, db, new_stale);
+    }
+
+  return 0;
+}
+
+/* ------------------------------------------------------------------ */
+
 int
-cmd_install (int, char**) { return not_impl ("install"); }
+cmd_install (int argc, char **argv)
+{
+  if (argc < 2)
+    {
+      std::printf (_ ("Usage: qp install <packages...>\n"));
+      return 1;
+    }
+
+  Config cfg = load_config ();
+  auto db = make_db (cfg);
+
+  /* Ensure repo is available. */
+  struct stat st;
+  if (stat (cfg.repo_dir.c_str (), &st) != 0)
+    cmd_update (0, nullptr);
+
+  int rc = 0;
+  for (int i = 1; i < argc; ++i)
+    {
+      rc = install_package (cfg, db, argv[i]);
+      if (rc != 0)
+        break;
+    }
+
+  /* Cascade: rebuild anything made stale by this install. */
+  if (rc == 0)
+    {
+      auto stale = lfspkg::find_stale_packages (db);
+      if (!stale.empty ())
+        {
+          std::printf (_ ("%d package(s) stale, rebuilding...\n"),
+                       static_cast<int> (stale.size ()));
+          rc = rebuild_cascade (cfg, db, stale);
+        }
+    }
+
+  return rc;
+}
+
+int
+cmd_rebuild (int argc, char **argv)
+{
+  Config cfg = load_config ();
+  auto db = make_db (cfg);
+
+  /* Ensure repo is available. */
+  struct stat st;
+  if (stat (cfg.repo_dir.c_str (), &st) != 0)
+    cmd_update (0, nullptr);
+
+  if (argc < 2 || std::strcmp (argv[1], "--stale") == 0)
+    {
+      auto stale = lfspkg::find_stale_packages (db);
+      if (stale.empty ())
+        {
+          std::printf (_ ("No stale packages found.\n"));
+          return 0;
+        }
+      std::printf (_ ("Rebuilding %d stale package(s)...\n"),
+                   static_cast<int> (stale.size ()));
+      return rebuild_cascade (cfg, db, stale);
+    }
+
+  if (std::strcmp (argv[1], "--all") == 0)
+    {
+      auto all = db.list_packages ();
+      if (all.empty ())
+        {
+          std::printf (_ ("No packages installed.\n"));
+          return 0;
+        }
+      std::printf (_ ("Rebuilding all %d package(s)...\n"),
+                   static_cast<int> (all.size ()));
+      return rebuild_cascade (cfg, db, all);
+    }
+
+  /* Rebuild specific packages. */
+  int rc = 0;
+  for (int i = 1; i < argc; ++i)
+    {
+      rc = rebuild_package (cfg, db, argv[i]);
+      if (rc != 0)
+        break;
+    }
+
+  /* Cascade after explicit rebuilds. */
+  if (rc == 0)
+    {
+      auto stale = lfspkg::find_stale_packages (db);
+      if (!stale.empty ())
+        {
+          std::printf (_ ("%d package(s) now stale, rebuilding...\n"),
+                       static_cast<int> (stale.size ()));
+          rc = rebuild_cascade (cfg, db, stale);
+        }
+    }
+
+  return rc;
+}
+
+int
+cmd_upgrade (int argc, char **argv)
+{
+  Config cfg = load_config ();
+  auto db = make_db (cfg);
+
+  /* Ensure repo is available. */
+  struct stat st;
+  if (stat (cfg.repo_dir.c_str (), &st) != 0)
+    cmd_update (0, nullptr);
+
+  auto index_vers = load_index_versions (cfg);
+  if (index_vers.empty ())
+    {
+      std::printf (_ ("No package index. Run 'qp update' first.\n"));
+      return 1;
+    }
+
+  std::vector<std::string> to_upgrade;
+
+  if (argc < 2)
+    {
+      /* No args: find all packages with newer versions. */
+      for (const auto &pkg : db.list_packages ())
+        {
+          auto it = index_vers.find (pkg);
+          if (it == index_vers.end ())
+            continue;
+          std::string installed;
+          try
+            {
+              installed = db.read_meta (pkg).version;
+            }
+          catch (...)
+            {
+              continue;
+            }
+          if (installed != it->second)
+            {
+              std::printf (_ ("%s: %s -> %s\n"), pkg.c_str (),
+                           installed.c_str (), it->second.c_str ());
+              to_upgrade.push_back (pkg);
+            }
+        }
+    }
+  else
+    {
+      /* Specific packages. */
+      for (int i = 1; i < argc; ++i)
+        {
+          const char *pkg = argv[i];
+          if (!db.installed (pkg))
+            {
+              std::printf (_ ("%s: not installed.\n"), pkg);
+              return 1;
+            }
+          auto it = index_vers.find (pkg);
+          if (it == index_vers.end ())
+            {
+              std::printf (_ ("%s: not found in repository.\n"), pkg);
+              return 1;
+            }
+          std::string installed = db.read_meta (pkg).version;
+          if (installed == it->second)
+            {
+              std::printf (_ ("%s: already up to date (%s).\n"), pkg,
+                           installed.c_str ());
+              continue;
+            }
+          std::printf (_ ("%s: %s -> %s\n"), pkg, installed.c_str (),
+                       it->second.c_str ());
+          to_upgrade.push_back (pkg);
+        }
+    }
+
+  if (to_upgrade.empty ())
+    {
+      std::printf (_ ("All packages up to date.\n"));
+      return 0;
+    }
+
+  std::printf (_ ("Upgrading %d package(s)...\n"),
+               static_cast<int> (to_upgrade.size ()));
+  return rebuild_cascade (cfg, db, to_upgrade);
+}
+
+int
+cmd_list (int, char**)
+{
+  auto db = make_db (load_config ());
+
+  auto pkgs = db.list_packages ();
+  if (pkgs.empty ())
+    {
+      std::printf (_ ("No packages installed.\n"));
+      return 0;
+    }
+
+  for (const auto &pkg : pkgs)
+    {
+      try
+        {
+          auto meta = db.read_meta (pkg);
+          std::printf ("%-20s %s\n", meta.name.c_str (),
+                       meta.version.c_str ());
+        }
+      catch (...)
+        {
+          std::printf ("%-20s (error reading meta)\n", pkg.c_str ());
+        }
+    }
+
+  return 0;
+}
+
 int
 cmd_remove (int, char**) { return not_impl ("remove"); }
-int
-cmd_rebuild (int, char**) { return not_impl ("rebuild"); }
-int
-cmd_list (int, char**) { return not_impl ("list"); }
 int
 cmd_register (int, char**) { return not_impl ("register"); }
 int

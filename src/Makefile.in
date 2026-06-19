@@ -104,7 +104,7 @@ PROGRAMS = $(bin_PROGRAMS)
 am_qp_OBJECTS = qp-main.$(OBJEXT) qp-cli.$(OBJEXT) qp-util.$(OBJEXT) \
 	qp-makefs.$(OBJEXT) qp-config.$(OBJEXT)
 qp_OBJECTS = $(am_qp_OBJECTS)
-qp_LDADD = $(LDADD)
+qp_DEPENDENCIES =
 qp_LINK = $(CXXLD) $(qp_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
@@ -211,6 +211,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
+LFSPKG_CPPFLAGS = @LFSPKG_CPPFLAGS@
+LFSPKG_LIBS = @LFSPKG_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -276,8 +278,9 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 qp_SOURCES = main.cpp cli.cpp cli.hpp util.cpp util.hpp makefs.cpp makefs.hpp config.cpp config.hpp
-qp_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir) -DLOCALEDIR='"$(localedir)"'
+qp_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir) -DLOCALEDIR='"$(localedir)"' @LFSPKG_CPPFLAGS@
 qp_CXXFLAGS = -std=c++17 -Wall -Wextra
+qp_LDADD = @LFSPKG_LIBS@
 all: all-am
 
 .SUFFIXES:

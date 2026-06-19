@@ -14,6 +14,7 @@ int cmd_search (int argc, char* argv[]);
 int cmd_install (int argc, char* argv[]);
 int cmd_remove (int argc, char* argv[]);
 int cmd_rebuild (int argc, char* argv[]);
+int cmd_upgrade (int argc, char* argv[]);
 int cmd_list (int argc, char* argv[]);
 int cmd_update (int argc, char* argv[]);
 int cmd_register (int argc, char* argv[]);

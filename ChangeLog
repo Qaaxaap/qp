@@ -1,3 +1,27 @@
+2026-06-19  Qaaxaap  <1515784026@qq.com>
+
+	* configure.ac: Add --with-lfspkg=DIR option and header check.
+	Link against lfspkg static library for package database API.
+	* src/Makefile.am: Add @LFSPKG_CPPFLAGS@ and @LFSPKG_LIBS@
+	substitution variables for lfspkg integration.
+	* src/cli.hpp: Declare cmd_upgrade().
+	* src/cli.cpp: Implement cmd_install() with recursive dependency
+	resolution, MAKEFS build execution via bash wrapper, and lfspkg
+	package registration with automatic built_deps tracking.
+	Implement cmd_rebuild() with --stale, --all, and per-package modes;
+	stale detection uses lfspkg::find_stale_packages() to compare
+	built_deps versions against currently-installed dependency versions.
+	Cascade: after every rebuild, automatically rebuild newly-stale
+	reverse dependencies until a fixed point is reached.
+	Implement cmd_list() using lfspkg::PackageDB::list_packages().
+	Implement cmd_upgrade() to compare installed versions against the
+	repository index and upgrade out-of-date packages with full cascade.
+	Add load_index_versions() helper that reads meta/index into a
+	name→version map for version comparison.
+	Add topo_sort() helper to order rebuilds with dependencies first.
+	* ChangeLog: This file.
+	* NEWS: Update for 0.2.1.
+
 2026-06-05  Qaaxaap  <1515784026@qq.com>
 
 	* configure.ac: Bump version to 0.2.0.

@@ -1,3 +1,16 @@
+Version 0.2.1 (2026-06-19)
+* Install command: fully implemented with recursive dependency resolution,
+  MAKEFS build execution, and lfspkg package registration.
+* Rebuild command: support --stale (auto-detect packages whose dependencies
+  have been upgraded), --all, and per-package modes.  Automatic cascade
+  rebuild of reverse dependencies after any rebuild.
+* Upgrade command: compare installed versions against repository index
+  and upgrade out-of-date packages with full cascade.
+* List command: query lfspkg database for installed packages.
+* Link against lfspkg static library for package database operations.
+* lfspkg: built_deps tracking records each dependency's version at build
+  time; find_stale_packages() detects packages needing rebuild.
+
 Version 0.2.0 (2026-06-05)
 * Configuration system: layered config from /etc/qp.conf and
   ~/.config/qp/qp.conf with KEY=VALUE format.
