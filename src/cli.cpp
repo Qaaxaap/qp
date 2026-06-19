@@ -11,6 +11,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <dirent.h>
 #include <fstream>
 #include <set>
@@ -18,6 +19,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+namespace fs = std::filesystem;
 
 static const Subcommand subcommands[] = {
   { "search", N_ ("<keyword>"), N_ ("Search available packages"), cmd_search },
@@ -63,13 +66,6 @@ print_version ()
 {
   std::printf ("qp %s\n", PACKAGE_VERSION);
   std::printf ("%s\n", _ ("Copyright (C) 2026 Qaaxaap.  License GPLv3+."));
-}
-
-static int
-not_impl (const char *name)
-{
-  std::printf (_ ("%s: not yet implemented.\n"), name);
-  return 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -749,19 +745,141 @@ cmd_list (int, char **)
 }
 
 int
-cmd_remove (int, char **)
+cmd_remove (int argc, char **argv)
 {
-  return not_impl ("remove");
+  if (argc < 2)
+    {
+      std::printf (_ ("Usage: qp remove <packages...>\n"));
+      return 1;
+    }
+
+  Config cfg = load_config ();
+  auto db = make_db (cfg);
+  auto owners = db.load_owners ();
+  fs::path targetRoot = lfspkg::default_target_root ();
+
+  int rc = 0;
+  for (int i = 1; i < argc; ++i)
+    {
+      const char *pkg = argv[i];
+      if (!db.installed (pkg))
+        {
+          std::printf (_ ("%s: not installed.\n"), pkg);
+          rc = 1;
+          continue;
+        }
+
+      auto revdeps = lfspkg::reverse_dependencies (db, pkg);
+      if (!revdeps.empty ())
+        {
+          std::printf (_ ("%s: required by:"), pkg);
+          for (const auto &d : revdeps)
+            std::printf (" %s", d.c_str ());
+          std::printf ("\n");
+          std::printf (_ ("Use 'qp remove' again to force-remove anyway.\n"));
+          rc = 1;
+          continue;
+        }
+
+      lfspkg::remove_package_files (db, pkg, targetRoot, owners);
+      std::printf (_ ("Removed %s\n"), pkg);
+    }
+
+  db.save_owners_atomic (owners);
+  return rc;
 }
+
 int
-cmd_register (int, char **)
+cmd_register (int argc, char **argv)
 {
-  return not_impl ("register");
+  if (argc < 2)
+    {
+      std::printf (_ ("Usage: qp register <pkg> [version] [deps...]\n"));
+      return 1;
+    }
+
+  Config cfg = load_config ();
+  auto db = make_db (cfg);
+
+  const char *name = argv[1];
+  const char *version = argc >= 3 ? argv[2] : "0";
+
+  if (db.installed (name))
+    {
+      std::printf (_ ("%s: already registered.\n"), name);
+      return 1;
+    }
+
+  std::vector<std::string> deps;
+  for (int i = 3; i < argc; ++i)
+    deps.push_back (argv[i]);
+
+  lfspkg::PackageMeta meta;
+  meta.name = name;
+  meta.version = version;
+  meta.install_time = std::to_string (std::time (nullptr));
+  meta.stage_dir = "";
+  meta.deps = deps;
+
+  db.ensure ();
+  db.write_meta_atomic (meta);
+  db.write_manifest_atomic (name, {});
+  std::printf (_ ("Registered %s %s\n"), name, version);
+  return 0;
 }
+
 int
-cmd_unregister (int, char **)
+cmd_unregister (int argc, char **argv)
 {
-  return not_impl ("unregister");
+  if (argc < 2)
+    {
+      std::printf (_ ("Usage: qp unregister <packages...>\n"));
+      return 1;
+    }
+
+  Config cfg = load_config ();
+  auto db = make_db (cfg);
+
+  int rc = 0;
+  for (int i = 1; i < argc; ++i)
+    {
+      const char *pkg = argv[i];
+      if (!db.installed (pkg))
+        {
+          std::printf (_ ("%s: not registered.\n"), pkg);
+          rc = 1;
+          continue;
+        }
+
+      /* Remove owned paths from owners. */
+      auto owners = db.load_owners ();
+      try
+        {
+          auto manifest = db.read_manifest (pkg);
+          bool changed = false;
+          for (const auto &e : manifest)
+            {
+              if (e.type != 'D' && owners.count (e.installPath)
+                  && owners[e.installPath] == pkg)
+                {
+                  owners.erase (e.installPath);
+                  changed = true;
+                }
+            }
+          if (changed)
+            db.save_owners_atomic (owners);
+        }
+      catch (...)
+        {
+        }
+
+      std::error_code ec1, ec2;
+      fs::remove (db.meta_path (pkg), ec1);
+      fs::remove (db.manifest_path (pkg), ec2);
+      std::printf (_ ("Unregistered %s\n"), pkg);
+    }
+
+  return rc;
 }
 
 const Subcommand *
