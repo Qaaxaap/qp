@@ -1,5 +1,18 @@
 2026-06-19  Qaaxaap  <1515784026@qq.com>
 
+	* configure.ac: Bump version to 0.2.4.
+	* src/util.hpp (download_file): Declare.
+	* src/util.cpp (download_file): New function.  Downloads a URL to a
+	local path using curl with automatic wget fallback.  Returns 0 on
+	success, -1 if both downloaders fail.
+	* src/cli.cpp (run_makefs_build): Move expand_vars lambda earlier.
+	Download source tarballs from SOURCE URLs before building; skip if
+	already cached in build/source/<pkg>/.  Report download progress.
+	* NEWS: Update for 0.2.4.
+	* ChangeLog: This file.
+
+2026-06-19  Qaaxaap  <1515784026@qq.com>
+
 	* configure.ac: Bump version to 0.2.3.
 	* src/config.hpp (Config): Rename repo_url to qur_url, repo_dir to
 	qur_dir.  Remove unused log_dir field.

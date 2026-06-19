@@ -1,3 +1,11 @@
+Version 0.2.4 (2026-06-19)
+* Automatic source tarball download: qp install now downloads SOURCE
+  URLs via curl (with wget fallback) before building.  Already-downloaded
+  tarballs are cached and skipped on subsequent builds.
+* Update MAKEFS SOURCE URLs in qur: all GNU packages now use the
+  ftpmirror.gnu.org redirector; binutils, procps, psmisc, e2fsprogs,
+  and vim URLs corrected per LFS 13.0 wget-list.
+
 Version 0.2.3 (2026-06-19)
 * Configuration naming: REPO_URL→QUR_URL, REPO_DIR→QUR_DIR (old keys
   still accepted).  Removed unused LOG_DIR.
