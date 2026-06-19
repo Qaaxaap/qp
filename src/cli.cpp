@@ -19,47 +19,35 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static const Subcommand subcommands[]
-    = { { "search", N_ ("<keyword>"),
-          N_ ("Search available packages"),
-          cmd_search },
-        { "install", N_ ("<packages...>"),
-          N_ ("Install packages and dependencies"),
-          cmd_install },
-        { "remove", N_ ("<packages...>"),
-          N_ ("Remove installed packages"),
-          cmd_remove },
-        { "rebuild", N_ ("[--stale|--all|<pkg>]"),
-          N_ ("Rebuild installed packages"),
-          cmd_rebuild },
-        { "upgrade", N_ ("[packages...]"),
-          N_ ("Upgrade installed packages to latest version"),
-          cmd_upgrade },
-        { "list", "",
-          N_ ("List installed packages"),
-          cmd_list },
-        { "update", "",
-          N_ ("Update package metadata from remote"),
-          cmd_update },
-        { "register", N_ ("<pkg> [version] [deps...]"),
-          N_ ("Register manually-installed package"),
-          cmd_register },
-        { "unregister", N_ ("<pkg>"),
-          N_ ("Unregister a manual package"),
-          cmd_unregister },
-        { nullptr, nullptr, nullptr, nullptr } };
+static const Subcommand subcommands[] = {
+  { "search", N_ ("<keyword>"), N_ ("Search available packages"), cmd_search },
+  { "install", N_ ("<packages...>"), N_ ("Install packages and dependencies"),
+    cmd_install },
+  { "remove", N_ ("<packages...>"), N_ ("Remove installed packages"),
+    cmd_remove },
+  { "rebuild", N_ ("[--stale|--all|<pkg>]"), N_ ("Rebuild installed packages"),
+    cmd_rebuild },
+  { "upgrade", N_ ("[packages...]"),
+    N_ ("Upgrade installed packages to latest version"), cmd_upgrade },
+  { "list", "", N_ ("List installed packages"), cmd_list },
+  { "update", "", N_ ("Update package metadata from remote"), cmd_update },
+  { "register", N_ ("<pkg> [version] [deps...]"),
+    N_ ("Register manually-installed package"), cmd_register },
+  { "unregister", N_ ("<pkg>"), N_ ("Unregister a manual package"),
+    cmd_unregister },
+  { nullptr, nullptr, nullptr, nullptr }
+};
 
 void
-print_usage (const char* prog)
+print_usage (const char *prog)
 {
   std::printf (_ ("Usage: %s <command> [options...]\n\n"), prog);
   std::printf ("%s\n\n", _ ("Commands:"));
 
-  for (const Subcommand* sc = subcommands; sc->name != nullptr; ++sc)
+  for (const Subcommand *sc = subcommands; sc->name != nullptr; ++sc)
     {
       if (sc->args[0] != '\0')
-        std::printf ("  %-12s %-22s %s\n", sc->name, sc->args,
-                     _ (sc->desc));
+        std::printf ("  %-12s %-22s %s\n", sc->name, sc->args, _ (sc->desc));
       else
         std::printf ("  %-12s %-22s %s\n", sc->name, "", _ (sc->desc));
     }
@@ -74,12 +62,11 @@ void
 print_version ()
 {
   std::printf ("qp %s\n", PACKAGE_VERSION);
-  std::printf ("%s\n",
-               _ ("Copyright (C) 2026 Qaaxaap.  License GPLv3+."));
+  std::printf ("%s\n", _ ("Copyright (C) 2026 Qaaxaap.  License GPLv3+."));
 }
 
 static int
-not_impl (const char* name)
+not_impl (const char *name)
 {
   std::printf (_ ("%s: not yet implemented.\n"), name);
   return 0;
@@ -118,8 +105,7 @@ generate_index (const std::string &repo_dir, std::string &err)
       if (ent->d_name[0] == '.')
         continue;
 
-      std::string makefs_path
-          = pkg_dir + "/" + ent->d_name + "/MAKEFS";
+      std::string makefs_path = pkg_dir + "/" + ent->d_name + "/MAKEFS";
 
       struct stat st;
       if (stat (makefs_path.c_str (), &st) != 0)
@@ -131,15 +117,15 @@ generate_index (const std::string &repo_dir, std::string &err)
         continue;
 
       /* Main package. */
-      out << spec.name << "\t" << spec.name << "\t" << spec.version
-          << "\t" << spec.description << "\n";
+      out << spec.name << "\t" << spec.name << "\t" << spec.version << "\t"
+          << spec.description << "\n";
       ++count;
 
       /* Sub-packages. */
       for (const auto &sub : spec.subpackages)
         {
-          out << spec.name << "\t" << sub.name << "\t"
-              << spec.version << "\t" << sub.description << "\n";
+          out << spec.name << "\t" << sub.name << "\t" << spec.version << "\t"
+              << sub.description << "\n";
           ++count;
         }
     }
@@ -166,8 +152,7 @@ cmd_update (int argc, char **argv)
   if (stat (cfg.repo_dir.c_str (), &st) != 0)
     {
       std::printf (_ ("Cloning %s...\n"), cfg.repo_url.c_str ());
-      int rc = run_command (
-          { "git", "clone", cfg.repo_url, cfg.repo_dir });
+      int rc = run_command ({ "git", "clone", cfg.repo_url, cfg.repo_dir });
       if (rc != 0)
         {
           std::printf (_ ("error: git clone failed\n"));
@@ -217,8 +202,7 @@ cmd_search (int argc, char **argv)
   std::ifstream in (cfg.repo_dir + "/meta/index");
   if (!in)
     {
-      std::printf (
-          _ ("No package index found. Run 'qp update' first.\n"));
+      std::printf (_ ("No package index found. Run 'qp update' first.\n"));
       return 1;
     }
 
@@ -241,16 +225,13 @@ cmd_search (int argc, char **argv)
       std::string name_low = fields[1];
       std::string desc_low = fields[3];
       for (auto &c : name_low)
-        c = static_cast<char> (std::tolower (
-            static_cast<unsigned char> (c)));
+        c = static_cast<char> (std::tolower (static_cast<unsigned char> (c)));
       for (auto &c : desc_low)
-        c = static_cast<char> (std::tolower (
-            static_cast<unsigned char> (c)));
+        c = static_cast<char> (std::tolower (static_cast<unsigned char> (c)));
 
       std::string kw_low = keyword;
       for (auto &c : kw_low)
-        c = static_cast<char> (std::tolower (
-            static_cast<unsigned char> (c)));
+        c = static_cast<char> (std::tolower (static_cast<unsigned char> (c)));
 
       if (name_low.find (kw_low) != std::string::npos
           || desc_low.find (kw_low) != std::string::npos)
@@ -260,16 +241,14 @@ cmd_search (int argc, char **argv)
             std::printf ("%-28s %-10s %s\n", fields[1].c_str (),
                          fields[2].c_str (), fields[3].c_str ());
           else
-            std::printf ("%-28s %-10s %s (%s %s)\n",
-                         fields[1].c_str (), fields[2].c_str (),
-                         fields[3].c_str (), _ ("from"),
+            std::printf ("%-28s %-10s %s (%s %s)\n", fields[1].c_str (),
+                         fields[2].c_str (), fields[3].c_str (), _ ("from"),
                          fields[0].c_str ());
         }
     }
 
   if (!found)
-    std::printf (
-        _ ("No packages found matching '%s'.\n"), keyword.c_str ());
+    std::printf (_ ("No packages found matching '%s'.\n"), keyword.c_str ());
 
   return 0;
 }
@@ -328,8 +307,8 @@ run_makefs_build (const std::string &makefs_path, const Config &cfg,
   int rc = run_command ({ "bash", script_path });
   if (rc != 0)
     {
-      std::printf (_ ("error: build failed for %s (exit %d)\n"),
-                   name.c_str (), rc);
+      std::printf (_ ("error: build failed for %s (exit %d)\n"), name.c_str (),
+                   rc);
       return "";
     }
 
@@ -348,8 +327,7 @@ install_package (const Config &cfg, lfspkg::PackageDB &db,
       return 0;
     }
 
-  std::string makefs_path
-      = cfg.repo_dir + "/packages/" + name + "/MAKEFS";
+  std::string makefs_path = cfg.repo_dir + "/packages/" + name + "/MAKEFS";
 
   qp::MakefsSpec spec;
   std::string err;
@@ -410,8 +388,7 @@ rebuild_package (const Config &cfg, lfspkg::PackageDB &db,
       return 1;
     }
 
-  std::string makefs_path
-      = cfg.repo_dir + "/packages/" + name + "/MAKEFS";
+  std::string makefs_path = cfg.repo_dir + "/packages/" + name + "/MAKEFS";
 
   qp::MakefsSpec spec;
   std::string err;
@@ -460,36 +437,37 @@ topo_sort (lfspkg::PackageDB &db, const std::vector<std::string> &pkgs)
       std::vector<std::string> stack;
       std::set<std::string> in_stack;
 
-      auto push = [&] (auto &&self, const std::string &cur) -> bool {
-        if (visited.count (cur))
-          return true;
-        if (in_stack.count (cur))
-          return true; /* cycle — skip */
-        if (!pkg_set.count (cur))
-          {
-            visited.insert (cur);
+      auto push = [&] (auto &&self, const std::string &cur) -> bool
+        {
+          if (visited.count (cur))
             return true;
-          }
-        in_stack.insert (cur);
+          if (in_stack.count (cur))
+            return true; /* cycle — skip */
+          if (!pkg_set.count (cur))
+            {
+              visited.insert (cur);
+              return true;
+            }
+          in_stack.insert (cur);
 
-        try
-          {
-            auto meta = db.read_meta (cur);
-            for (const auto &dep : meta.deps)
-              {
-                if (!self (self, dep))
-                  return false;
-              }
-          }
-        catch (...)
-          {
-          }
+          try
+            {
+              auto meta = db.read_meta (cur);
+              for (const auto &dep : meta.deps)
+                {
+                  if (!self (self, dep))
+                    return false;
+                }
+            }
+          catch (...)
+            {
+            }
 
-        in_stack.erase (cur);
-        visited.insert (cur);
-        sorted.push_back (cur);
-        return true;
-      };
+          in_stack.erase (cur);
+          visited.insert (cur);
+          sorted.push_back (cur);
+          return true;
+        };
       push (push, p);
     }
 
@@ -742,7 +720,7 @@ cmd_upgrade (int argc, char **argv)
 }
 
 int
-cmd_list (int, char**)
+cmd_list (int, char **)
 {
   auto db = make_db (load_config ());
 
@@ -771,16 +749,25 @@ cmd_list (int, char**)
 }
 
 int
-cmd_remove (int, char**) { return not_impl ("remove"); }
-int
-cmd_register (int, char**) { return not_impl ("register"); }
-int
-cmd_unregister (int, char**) { return not_impl ("unregister"); }
-
-const Subcommand*
-find_subcommand (const char* name)
+cmd_remove (int, char **)
 {
-  for (const Subcommand* sc = subcommands; sc->name != nullptr; ++sc)
+  return not_impl ("remove");
+}
+int
+cmd_register (int, char **)
+{
+  return not_impl ("register");
+}
+int
+cmd_unregister (int, char **)
+{
+  return not_impl ("unregister");
+}
+
+const Subcommand *
+find_subcommand (const char *name)
+{
+  for (const Subcommand *sc = subcommands; sc->name != nullptr; ++sc)
     {
       if (std::strcmp (sc->name, name) == 0)
         return sc;

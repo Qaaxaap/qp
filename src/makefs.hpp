@@ -4,7 +4,8 @@
 #include <string>
 #include <vector>
 
-namespace qp {
+namespace qp
+{
 
 struct SubPackage
 {
@@ -44,11 +45,10 @@ struct MakefsSpec
   std::map<std::string, std::string> functions;
 };
 
-bool
-parse_makefs (const std::string &path, MakefsSpec &out, std::string &err);
+bool parse_makefs (const std::string &path, MakefsSpec &out, std::string &err);
 
-bool
-parse_makefs_string (const std::string &content, const std::string &source_name,
-                     MakefsSpec &out, std::string &err);
+bool parse_makefs_string (const std::string &content,
+                          const std::string &source_name, MakefsSpec &out,
+                          std::string &err);
 
 } // namespace qp

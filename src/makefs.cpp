@@ -5,9 +5,11 @@
 #include <fstream>
 #include <sstream>
 
-namespace qp {
+namespace qp
+{
 
-namespace {
+namespace
+{
 
 /* --- basic utilities ----------------------------------------------------- */
 
@@ -248,8 +250,8 @@ try_parse_section (ParseCtx &ctx, const std::string &line, int lineno)
       return true;
     }
 
-  ctx.err = ctx.source + ":" + std::to_string (lineno)
-            + ": unknown section '" + body + "'";
+  ctx.err = ctx.source + ":" + std::to_string (lineno) + ": unknown section '"
+            + body + "'";
   return true;
 }
 
@@ -381,8 +383,7 @@ process_top_line (ParseCtx &ctx, const std::string &line, int lineno)
   if (try_parse_assignment (ctx, trimmed))
     return true;
 
-  ctx.err = ctx.source + ":" + std::to_string (lineno)
-            + ": unexpected token";
+  ctx.err = ctx.source + ":" + std::to_string (lineno) + ": unexpected token";
   return false;
 }
 
@@ -465,8 +466,9 @@ assign_spec_field (MakefsSpec &out, const std::string &key,
 /* --- public API ---------------------------------------------------------- */
 
 bool
-parse_makefs_string (const std::string &content, const std::string &source_name,
-                     MakefsSpec &out, std::string &err)
+parse_makefs_string (const std::string &content,
+                     const std::string &source_name, MakefsSpec &out,
+                     std::string &err)
 {
   out = MakefsSpec{};
 
@@ -513,8 +515,8 @@ parse_makefs_string (const std::string &content, const std::string &source_name,
   /* Check for unterminated constructs. */
   if (ctx.state == State::HEREDOC)
     {
-      err = source_name + ": unclosed heredoc (expected '"
-            + ctx.heredoc_term + "')";
+      err = source_name + ": unclosed heredoc (expected '" + ctx.heredoc_term
+            + "')";
       return false;
     }
   if (ctx.state == State::FUNCTION_BODY)

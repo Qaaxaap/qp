@@ -159,8 +159,7 @@ SOURCE = http://example.com/$(NAME)-$(B).tar.gz
   /* C has $(MISSING) which is undefined — left verbatim. */
   /* SOURCE should expand NAME and B.  B = A-r1 = $(VERSION)-r1 = 1.0-r1. */
   check (spec.sources.size () == 1, "var expand source count");
-  check (spec.sources[0]
-             == "http://example.com/foo-1.0-r1.tar.gz",
+  check (spec.sources[0] == "http://example.com/foo-1.0-r1.tar.gz",
          "var expand chained");
 }
 
@@ -326,8 +325,7 @@ test_error_malformed_section ()
   qp::MakefsSpec spec;
   std::string err;
 
-  bool ok = qp::parse_makefs_string (
-      "NAME = test\n[bad", "(test)", spec, err);
+  bool ok = qp::parse_makefs_string ("NAME = test\n[bad", "(test)", spec, err);
   check (!ok, "malformed section fails");
   check (err.find ("malformed") != std::string::npos,
          "malformed section message");
@@ -387,8 +385,7 @@ check() {}
 static void
 test_quoted_string_preserves_spaces ()
 {
-  const char *input
-      = "NAME = test\nVERSION = 1\nDESC = \"hello world\"\n";
+  const char *input = "NAME = test\nVERSION = 1\nDESC = \"hello world\"\n";
 
   qp::MakefsSpec spec;
   std::string err;

@@ -5,10 +5,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static const char*
+static const char *
 find_locale_dir ()
 {
-  const char* dir = std::getenv ("TEXTDOMAINDIR");
+  const char *dir = std::getenv ("TEXTDOMAINDIR");
   if (dir != nullptr)
     return dir;
 
@@ -30,7 +30,7 @@ i18n_init ()
 }
 
 int
-run_command (const std::vector<std::string>& args)
+run_command (const std::vector<std::string> &args)
 {
   if (args.empty ())
     return -1;
@@ -41,10 +41,10 @@ run_command (const std::vector<std::string>& args)
 
   if (pid == 0)
     {
-      std::vector<char*> argv;
+      std::vector<char *> argv;
       argv.reserve (args.size () + 1);
-      for (const auto& a : args)
-        argv.push_back (const_cast<char*> (a.c_str ()));
+      for (const auto &a : args)
+        argv.push_back (const_cast<char *> (a.c_str ()));
       argv.push_back (nullptr);
 
       execvp (argv[0], argv.data ());

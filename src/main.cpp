@@ -5,7 +5,7 @@
 #include <cstring>
 
 int
-main (int argc, char* argv[])
+main (int argc, char *argv[])
 {
   i18n_init ();
 
@@ -15,7 +15,7 @@ main (int argc, char* argv[])
       return 1;
     }
 
-  const char* cmd = argv[1];
+  const char *cmd = argv[1];
 
   if (std::strcmp (cmd, "--help") == 0)
     {
@@ -29,7 +29,7 @@ main (int argc, char* argv[])
       return 0;
     }
 
-  const Subcommand* sc = find_subcommand (cmd);
+  const Subcommand *sc = find_subcommand (cmd);
   if (sc == nullptr)
     {
       std::printf (_ ("%s: unknown command '%s'\n"), argv[0], cmd);

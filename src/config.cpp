@@ -73,8 +73,7 @@ load_config ()
   const char *home = std::getenv ("HOME");
   if (home != nullptr)
     {
-      std::string user_conf
-          = std::string (home) + "/.config/qp/qp.conf";
+      std::string user_conf = std::string (home) + "/.config/qp/qp.conf";
       parse_file (user_conf, cfg);
     }
 
