@@ -14,16 +14,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout lfspkg
+        uses: actions/checkout@v4
+        with:
+          repository: Qaaxaap/lfspkg
+          path: lfspkg
+
       - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y autoconf automake g++ make gettext
 
+      - name: Bootstrap lfspkg
+        run: |
+          cd lfspkg
+          autoreconf -i
+          ./configure
+          make
+
       - name: Bootstrap
         run: autoreconf -i
 
       - name: Configure
-        run: ./configure
+        run: ./configure --with-lfspkg="$GITHUB_WORKSPACE/lfspkg"
 
       - name: Build
         run: make
@@ -32,7 +45,7 @@ jobs:
         run: make check
 
       - name: Distcheck
-        run: make distcheck
+        run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--with-lfspkg=$GITHUB_WORKSPACE/lfspkg"
 
   release:
     needs: build
@@ -41,15 +54,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout lfspkg
+        uses: actions/checkout@v4
+        with:
+          repository: Qaaxaap/lfspkg
+          path: lfspkg
+
       - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y autoconf automake g++ make gettext
 
+      - name: Bootstrap lfspkg
+        run: |
+          cd lfspkg
+          autoreconf -i
+          ./configure
+          make
+
       - name: Create distribution tarball
         run: |
           autoreconf -i
-          ./configure
+          ./configure --with-lfspkg="$GITHUB_WORKSPACE/lfspkg"
           make dist
 
       - name: Upload tarball to GitHub Release
