@@ -263,9 +263,9 @@ make_db (const Config &cfg)
 /* Run a MAKEFS build: prepare, build, package.
    Returns the stage directory path. */
 static std::string
-run_makefs_build (const std::string &makefs_path, const Config &cfg,
-                  const std::string &name)
+run_makefs_build (const qp::MakefsSpec &spec, const Config &cfg)
 {
+  const std::string &name = spec.name;
   std::string stage = cfg.build_dir + "/stage/" + name;
   std::string build = cfg.build_dir + "/build/" + name;
   std::string srcdir = cfg.build_dir + "/source/" + name;
@@ -275,8 +275,8 @@ run_makefs_build (const std::string &makefs_path, const Config &cfg,
   run_command ({ "mkdir", "-p", build });
   run_command ({ "mkdir", "-p", srcdir });
 
-  /* Build a wrapper script that sources the MAKEFS and calls
-     prepare + build + package. */
+  /* Build a wrapper script that defines MAKEFS variables and
+     functions, then calls prepare + build + package. */
   std::string script_path = cfg.build_dir + "/_build_" + name + ".sh";
   std::ofstream script (script_path);
   if (!script)
@@ -291,10 +291,47 @@ run_makefs_build (const std::string &makefs_path, const Config &cfg,
   script << "export SRCDIR='" << srcdir << "'\n";
   script << "mkdir -p \"$STAGE\" \"$BUILD_DIR\" \"$SRCDIR\"\n";
   script << "cd \"$SRCDIR\"\n";
-  script << "source '" << makefs_path << "'\n";
-  script << "type prepare &>/dev/null && prepare\n";
-  script << "type build &>/dev/null && build\n";
-  script << "type package &>/dev/null && package\n";
+
+  /* Emit MAKEFS metadata as bash variables (no spaces around =). */
+  script << "NAME='" << spec.name << "'\n";
+  script << "VERSION='" << spec.version << "'\n";
+  script << "RELEASE='" << spec.release << "'\n";
+
+  /* Expand $(VAR) references in a string. */
+  auto expand_vars = [&spec] (std::string body) -> std::string
+    {
+      auto subst = [&body] (const std::string &token, const std::string &value)
+        {
+          size_t pos = 0;
+          while ((pos = body.find (token, pos)) != std::string::npos)
+            {
+              body.replace (pos, token.size (), value);
+              pos += value.size ();
+            }
+        };
+      subst ("$(NAME)", spec.name);
+      subst ("$(VERSION)", spec.version);
+      subst ("$(RELEASE)", spec.release);
+      return body;
+    };
+
+  /* Emit functions as proper bash function definitions. */
+  for (const auto &[fname, fbody] : spec.functions)
+    {
+      script << fname << "() {\n";
+      script << expand_vars (fbody) << "\n";
+      script << "}\n";
+    }
+
+  /* Pre-install hook. */
+  if (!spec.pre_install.empty ())
+    {
+      script << spec.pre_install << "\n";
+    }
+
+  script << "cd \"$SRCDIR\" && prepare\n";
+  script << "cd \"$SRCDIR\" && build\n";
+  script << "cd \"$SRCDIR\" && package\n";
   script.close ();
 
   run_command ({ "chmod", "+x", script_path });
@@ -346,7 +383,7 @@ install_package (const Config &cfg, lfspkg::PackageDB &db,
     }
 
   /* Build the package. */
-  std::string stage = run_makefs_build (makefs_path, cfg, name);
+  std::string stage = run_makefs_build (spec, cfg);
   if (stage.empty ())
     return 1;
 
@@ -394,7 +431,7 @@ rebuild_package (const Config &cfg, lfspkg::PackageDB &db,
       return 1;
     }
 
-  std::string stage = run_makefs_build (makefs_path, cfg, name);
+  std::string stage = run_makefs_build (spec, cfg);
   if (stage.empty ())
     return 1;
 
